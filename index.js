@@ -18,12 +18,13 @@ else if (typeof define !== "undefined" && typeof define === 'function' && typeof
 
 if (g.angular) {
   g.angular.module('$resource', [])
-    .factory('$resource', function () {
-      return $resource;
+    .provider('$resource', function () {
+      this.$get = function () {
+        return $resource;
+      }
     });
 } else if (g.$ && g.jQuery) {
   g.$.fn = $resource;
-}else{
+} else {
   window.$resource = $resource;
 }
-

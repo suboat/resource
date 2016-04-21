@@ -22,11 +22,10 @@ let headers = {
  * @returns {boolean | promise}
  */
 let interceptor = (response)=> {
-  if (!response) return $q.reject(response);
-  if (response.data) {
-    return $q.resolve(response);
+  if (!response || response.status >= 400 || response.data.error || !response.data.success || !response.data || !response.data.data) {
+    return $q.reject();
   } else {
-    return $q.resolve(response);
+    return $q.resolve(response.data);
   }
 };
 
@@ -70,7 +69,6 @@ class $resource {
       object.headers = object.headers ? object.headers : headers;
       object.interceptor = object.interceptor ? object.interceptor : interceptor;
       object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : withCredentials;
-
       // 函数调用时，真正传入的参数
       http.prototype[methodName] = function (params) {
         let _url = $resource.parseParams(url, params);
@@ -89,16 +87,22 @@ class $resource {
 
   };
 
+  // 是否跨域
   static set withCredentials(boolean) {
     withCredentials = !!boolean;
   }
 
+  static get withCredentials() {
+    return withCredentials;
+  }
+
+  // http
   static set $http(func) {
     $http = func;
   }
 
-  static get withCredentials() {
-    return withCredentials;
+  static get $http() {
+    return $http;
   }
 
   // 获取header
@@ -120,6 +124,15 @@ class $resource {
   static set interceptor(func) {
     interceptor = func;
   };
+
+  // 设置api地址
+  static set hosts(url) {
+    hosts = url;
+  }
+
+  static get hosts(){
+    return hosts;
+  }
 
   /**
    * 将url和参数解析，得到真正的url地址
