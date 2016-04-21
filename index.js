@@ -14,8 +14,6 @@ else if (typeof define !== "undefined" && typeof define === 'function' && typeof
   g.define(function () {
     return $resource
   });
-} else {
-  window.$resource = $resource;
 }
 
 if (g.angular) {
@@ -25,5 +23,7 @@ if (g.angular) {
     });
 } else if (g.$ && g.jQuery) {
   g.$.fn = $resource;
+}else{
+  window.$resource = $resource;
 }
 

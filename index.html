@@ -11,6 +11,10 @@
 <script src="dist/index.js"></script>
 
 <script>
+
+  console.log(window);
+  console.log(window.$resource);
+
   $resource.withCredentials = true;
 
   $resource.interceptor = function (response) {

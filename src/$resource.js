@@ -1,12 +1,12 @@
 let $utils = require('./$utils');
-
-// let $http = require('./$http');
+let $q = require('q');
 
 let $http = function () {
 
 };
 
-let $q = require('q');
+// root url address
+let hosts = '';
 
 // 是否带跨域请求头
 let withCredentials = false;
@@ -147,9 +147,8 @@ class $resource {
    * @returns {*}
    */
   static register(id = Math.random().toFixed(6), url, params, actions, options) {
-    if ($resource.q[id]) {
-      console.error(`API ${id} can't be register twice`);
-    }
+    if ($resource.q[id]) console.warn(`API ${id} can't be register twice`);
+    url = hosts + url;
     $resource.q[id] = new $resource(url, params, actions, options);
     return $resource.q[id];
   };
