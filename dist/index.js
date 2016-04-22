@@ -2671,7 +2671,7 @@ var $http = function $http(_ref) {
 
   XHR.open(method, url, true);
 
-  // 设置头部信息
+  // 设置头部信息，必须在链接服务器之后
   var requestHeader = $utils.merge(HEADER, headers && $utils.isObject(headers) ? headers : {});
   $utils.forEach(requestHeader, function (value, key) {
     XHR.setRequestHeader(key, value);
@@ -2764,11 +2764,13 @@ var $q = require('q');
 
 var $http = function $http() {};
 
-// root url address
-var hosts = '';
-
-// 是否带跨域请求头
-var withCredentials = false;
+var config = {
+  hosts: '',
+  withCredentials: false,
+  headers: {
+    Accept: 'application/json, text/plain, text/html, */*'
+  }
+};
 
 // 全局的header
 var headers = {
@@ -2828,9 +2830,9 @@ var $resource = (function () {
     $utils.forEach(actions, function (object, methodName) {
 
       // 设置header和拦截器和跨域请求
-      object.headers = object.headers ? object.headers : headers;
+      object.headers = object.headers ? object.headers : config.headers;
       object.interceptor = object.interceptor ? object.interceptor : interceptor;
-      object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : withCredentials;
+      object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : config.withCredentials;
       // 函数调用时，真正传入的参数
       http.prototype[methodName] = function (params) {
         var _url = $resource.parseParams(url, params);
@@ -2878,7 +2880,7 @@ var $resource = (function () {
     if (id === undefined) id = Math.random().toFixed(6);
 
     if ($resource.q[id]) console.warn('API ' + id + ' can\'t be register twice');
-    url = hosts + url;
+    url = config.hosts + url;
     $resource.q[id] = new $resource(url, params, actions, options);
     return $resource.q[id];
   };
@@ -2888,10 +2890,10 @@ var $resource = (function () {
 
     // 是否跨域
     set: function set(boolean) {
-      withCredentials = !!boolean;
+      config.withCredentials = !!boolean;
     },
     get: function get() {
-      return withCredentials;
+      return config.withCredentials;
     }
 
     // http
@@ -2908,13 +2910,13 @@ var $resource = (function () {
   }, {
     key: 'headers',
     get: function get() {
-      return headers;
+      return config.headers;
     },
 
     // 设置header
     set: function set(json) {
-      if (!$utils.isObject(json)) return false;
-      return $utils.extend(headers, json);
+      if (!$utils.isObject(json)) return config.headers;
+      return $utils.extend(config.headers, json);
     }
   }, {
     key: 'interceptor',
@@ -2931,10 +2933,10 @@ var $resource = (function () {
 
     // 设置api地址
     set: function set(url) {
-      hosts = url;
+      config.hosts = url;
     },
     get: function get() {
-      return hosts;
+      return config.hosts;
     }
   }]);
 

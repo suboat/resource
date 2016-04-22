@@ -11,7 +11,6 @@ const HEADER = {
   Accept: 'application/json, text/plain, text/html, */*'
 };
 
-
 /**
  * 发送http请求
  * @param url
@@ -93,9 +92,9 @@ let $http = function ({url='', method='', headers={}, withCredentials=false, dat
   let ErrorHandler = {};
   ['timeout', 'error', 'abort'].forEach((eventName)=> {
     ErrorHandler[`on${eventName}`] = ()=> {
-      deferred.reject(XHR.warper);
-    };
-  });
+    deferred.reject(XHR.warper);
+};
+});
 
   ErrorHandler = $utils.merge(ErrorHandler, eventHandlers);
 
@@ -107,7 +106,7 @@ let $http = function ({url='', method='', headers={}, withCredentials=false, dat
 
   XHR.open(method, url, true);
 
-  // 设置头部信息
+  // 设置头部信息，必须在链接服务器之后
   let requestHeader = $utils.merge(HEADER, headers && $utils.isObject(headers) ? headers : {});
   $utils.forEach(requestHeader, function (value, key) {
     XHR.setRequestHeader(key, value);

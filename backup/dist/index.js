@@ -20,8 +20,10 @@ if (typeof module !== "undefined" && typeof module === 'object' && typeof module
 }
 
 if (g.angular) {
-  g.angular.module('$resource', []).factory('$resource', function () {
-    return $resource;
+  g.angular.module('$resource', []).provider('$resource', function () {
+    this.$get = function () {
+      return $resource;
+    };
   });
 } else if (g.$ && g.jQuery) {
   g.$.fn = $resource;
@@ -2595,61 +2597,59 @@ var $http = function $http(_ref) {
 
   var deferred = $q.defer();
 
-  if (cache) {
-    // 如果已有缓存
-    var _cache = getCache(url);
-    if (_cache) {
-      if (_cache.status === 1) {
-        var _XHR = _cache.XHR;
-        var response = format(_XHR);
-        deferred.resolve(response);
-      } else {
-        deferred.reject(_cache.XHR);
-      }
-      return deferred.promise;
-    }
-  }
-
-  var XHR = window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : new XMLHttpRequest();
+  var XHR = window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : window.XMLHttpRequest ? new XMLHttpRequest() : new XDomainRequest();
 
   // CROS
-  if (withCredentials !== undefined) XHR.withCredentials = withCredentials;
+  XHR.withCredentials = !!withCredentials;
   // timeout
   if (timeout) XHR.timeout = timeout;
+
+  XHR.$$method = method;
+
+  XHR.$$url = url;
+
+  XHR.$$data = data;
+  XHR.$$cache = cache;
+
+  XHR.warper = {
+    resource: {
+      $promise: deferred.promise
+    }
+  };
 
   XHR.onreadystatechange = function (event) {
     if (XHR.readyState !== 4) return;
 
-    var response = format(XHR);
-
     if (/^(2|3)/.test(XHR.status)) {
 
+      XHR.warper = XHRWraper(XHR, requestHeader, deferred.promise);
+
       // 经过拦截器筛选
-      var inter = interceptor(response);
+      var inter = interceptor(XHR.warper);
 
       // 返回的是promise
       if ($utils.isDefined(inter) && $utils.isObject(inter) && $utils.isFunction(inter.then)) {
-        inter.then(function () {
-          setCache(url, 1, XHR);
-          deferred.resolve(response);
-        }, function () {
-          setCache(url, 0, XHR);
-          deferred.reject(response);
+        inter.then(function (resp) {
+          XHR.warper.resource.$resolve = true;
+          deferred.resolve(resp || XHR.warper);
+        }, function (error) {
+          XHR.warper.resource.$resolve = false;
+          deferred.reject(error || XHR.warper);
         });
       }
       // 返回的是布尔值
       else if ($utils.isBoolean(inter)) {
-          if (!!interceptor(response)) {
-            setCache(url, 1, XHR);
-            deferred.resolve(response);
+          if (!!interceptor(XHR.warper)) {
+            XHR.warper.resource.$resolve = true;
+            deferred.resolve(XHR.warper);
           } else {
-            setCache(url, 0, XHR);
-            deferred.reject(response);
+            XHR.warper.resource.$resolve = false;
+            deferred.reject(XHR.warper);
           }
         }
     } else {
-      setCache(url, 0, XHR);
-      deferred.reject(response);
+      XHR.warper.resource.$resolve = false;
+      deferred.reject(XHR.warper);
     }
   };
 
@@ -2657,8 +2657,7 @@ var $http = function $http(_ref) {
   var ErrorHandler = {};
   ['timeout', 'error', 'abort'].forEach(function (eventName) {
     ErrorHandler['on' + eventName] = function () {
-      setCache(url, 0, XHR);
-      deferred.reject(XHR);
+      deferred.reject(XHR.warper);
     };
   });
 
@@ -2673,27 +2672,52 @@ var $http = function $http(_ref) {
   XHR.open(method, url, true);
 
   // 设置头部信息
-  headers = $utils.merge(HEADER, headers && $utils.isObject(headers) ? headers : {});
-  $utils.forEach(headers, function (value, key) {
+  var requestHeader = $utils.merge(HEADER, headers && $utils.isObject(headers) ? headers : {});
+  $utils.forEach(requestHeader, function (value, key) {
     XHR.setRequestHeader(key, value);
   });
 
   XHR.send(data ? JSON.stringify(data) : null);
 
-  return deferred.promise;
+  return XHR.warper.resource;
 };
 
-$http.cache = {};
-
-var setCache = function setCache(url, status, XHR) {
-  $http.cache[url] = {
-    status: status,
-    XHR: XHR
+/**
+ * 对XHR进行包装
+ * @param XHR
+ * @constructor
+ */
+var XHRWraper = function XHRWraper(XHR, requireHeaders) {
+  var config = {
+    headers: requireHeaders,
+    method: XHR.$$method.toUpperCase(),
+    withCredentials: XHR.withCredentials,
+    url: XHR.$$url,
+    data: XHR.$$data,
+    cache: XHR.$$cache
   };
+  var data = format(XHR);
+
+  // headers
+  var headers = getResponseHeaders(XHR);
+
+  var resource = $utils.extend(XHR.warper.resource, { $resolve: false }, data || {});
+
+  return { config: config, data: data, headers: headers, resource: resource, status: XHR.status, statusText: XHR.statusText };
 };
 
-var getCache = function getCache(url) {
-  return cache = $http.cache[url];
+// 格式化返回头
+var getResponseHeaders = function getResponseHeaders(XHR) {
+  var headers = {};
+  var respHeaders = XHR.getAllResponseHeaders();
+  respHeaders.split(/\n/g).forEach(function (str, index) {
+    var match = /^([\s\S]+)\:([\s\S]+)$/i.exec(str);
+    if (!match || !match[1] || !match[2]) return;
+    var key = match[1].trim();
+    var value = match[2].trim();
+    headers[key] = value;
+  });
+  return headers;
 };
 
 /**
@@ -2717,16 +2741,10 @@ var format = function format(XHR) {
   $http[method.toLocaleLowerCase()] = function (url, params, config) {
     if (params === undefined) params = {};
 
-    var deferred = $q.defer();
     // 除GET方法外，其余带DATA
-    var data = /^\s*GET/i.test(method) ? null : params;
+    var data = /^\s*GET/i.test(method) ? null : Object.keys(params).length ? params : null;
     config = $utils.merge({ url: url, method: method, data: data }, config);
-    $http(config).then(function (resp) {
-      deferred.resolve(resp);
-    }, function (error) {
-      deferred.reject(error);
-    });
-    return deferred.promise;
+    return $http(config);
   };
 });
 
@@ -2763,11 +2781,10 @@ var headers = {
  * @returns {boolean | promise}
  */
 var interceptor = function interceptor(response) {
-  if (!response) return $q.reject(response);
-  if (response.data) {
-    return $q.resolve(response);
+  if (!response || response.status >= 400 || response.data.error || !response.data.success || !response.data || !response.data.data) {
+    return $q.reject();
   } else {
-    return $q.resolve(response);
+    return $q.resolve(response.data);
   }
 };
 
@@ -2814,7 +2831,6 @@ var $resource = (function () {
       object.headers = object.headers ? object.headers : headers;
       object.interceptor = object.interceptor ? object.interceptor : interceptor;
       object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : withCredentials;
-
       // 函数调用时，真正传入的参数
       http.prototype[methodName] = function (params) {
         var _url = $resource.parseParams(url, params);
@@ -2869,6 +2885,8 @@ var $resource = (function () {
 
   _createClass($resource, null, [{
     key: 'withCredentials',
+
+    // 是否跨域
     set: function set(boolean) {
       withCredentials = !!boolean;
     },
@@ -2876,12 +2894,17 @@ var $resource = (function () {
       return withCredentials;
     }
 
-    // 获取header
+    // http
   }, {
     key: '$http',
     set: function set(func) {
       $http = func;
+    },
+    get: function get() {
+      return $http;
     }
+
+    // 获取header
   }, {
     key: 'headers',
     get: function get() {
@@ -2902,6 +2925,16 @@ var $resource = (function () {
     },
     set: function set(func) {
       interceptor = func;
+    }
+  }, {
+    key: 'hosts',
+
+    // 设置api地址
+    set: function set(url) {
+      hosts = url;
+    },
+    get: function get() {
+      return hosts;
     }
   }]);
 

@@ -5,11 +5,13 @@ let $http = function () {
 
 };
 
-// root url address
-let hosts = '';
-
-// 是否带跨域请求头
-let withCredentials = false;
+let config = {
+  hosts:'',
+  withCredentials:false,
+  headers:{
+    Accept: 'application/json, text/plain, text/html, */*'
+  }
+}
 
 // 全局的header
 let headers = {
@@ -66,9 +68,9 @@ class $resource {
     $utils.forEach(actions, function (object, methodName) {
 
       // 设置header和拦截器和跨域请求
-      object.headers = object.headers ? object.headers : headers;
+      object.headers = object.headers ? object.headers : config.headers;
       object.interceptor = object.interceptor ? object.interceptor : interceptor;
-      object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : withCredentials;
+      object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : config.withCredentials;
       // 函数调用时，真正传入的参数
       http.prototype[methodName] = function (params) {
         let _url = $resource.parseParams(url, params);
@@ -89,11 +91,11 @@ class $resource {
 
   // 是否跨域
   static set withCredentials(boolean) {
-    withCredentials = !!boolean;
+    config.withCredentials = !!boolean;
   }
 
   static get withCredentials() {
-    return withCredentials;
+    return config.withCredentials;
   }
 
   // http
@@ -107,13 +109,13 @@ class $resource {
 
   // 获取header
   static get headers() {
-    return headers;
+    return config.headers;
   };
 
   // 设置header
   static set headers(json) {
-    if (!$utils.isObject(json)) return false;
-    return $utils.extend(headers, json);
+    if (!$utils.isObject(json)) return config.headers;
+    return $utils.extend(config.headers, json);
   };
 
   // 获取拦截器
@@ -127,11 +129,11 @@ class $resource {
 
   // 设置api地址
   static set hosts(url) {
-    hosts = url;
+    config.hosts = url;
   }
 
   static get hosts(){
-    return hosts;
+    return config.hosts;
   }
 
   /**
@@ -161,7 +163,7 @@ class $resource {
    */
   static register(id = Math.random().toFixed(6), url, params, actions, options) {
     if ($resource.q[id]) console.warn(`API ${id} can't be register twice`);
-    url = hosts + url;
+    url = config.hosts + url;
     $resource.q[id] = new $resource(url, params, actions, options);
     return $resource.q[id];
   };
