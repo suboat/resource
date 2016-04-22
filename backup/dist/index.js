@@ -6,33 +6,28 @@
 'use strict';
 
 var $http = require('./src/$http');
+
 var $resource = require('./src/$resource');
 
 var g = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : undefined;
 
 if (typeof module !== "undefined" && typeof module === 'object' && typeof module.exports === 'object') {
-  console.info('module');
   module.exports = $resource;
 } else if (typeof define !== "undefined" && typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
-  console.info('defined AMD');
   g.define(function () {
     return $resource;
   });
-} else {
-  console.info('window');
-  window.$resource = $resource;
 }
 
 if (g.angular) {
-  console.info('angularJS');
   g.angular.module('$resource', []).factory('$resource', function () {
     return $resource;
   });
 } else if (g.$ && g.jQuery) {
   g.$.fn = $resource;
+} else {
+  window.$resource = $resource;
 }
-
-module.exports = $resource;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./src/$http":40,"./src/$resource":41}],2:[function(require,module,exports){
@@ -2560,8 +2555,7 @@ var $resource = require('./$resource');
 
 // 默认的请求头
 var HEADER = {
-  Accept: 'application/json, text/plain, text/html, */*',
-  hello: 'world'
+  Accept: 'application/json, text/plain, text/html, */*'
 };
 
 /**
@@ -2748,37 +2742,33 @@ var _createClass = (function () { function defineProperties(target, props) { for
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var $utils = require('./$utils');
-
-// let $http = require('./$http');
+var $q = require('q');
 
 var $http = function $http() {};
 
-var $q = require('q');
+// root url address
+var hosts = '';
 
 // 是否带跨域请求头
 var withCredentials = false;
 
 // 全局的header
 var headers = {
-  Accept: 'application/json, text/plain, text/html, */*',
-  hello: 'world',
-  forWho: 'angular'
+  Accept: 'application/json, text/plain, text/html, */*'
 };
 
 /**
  * 全局的拦截器
  * @param response
- * @returns {boolean}
+ * @returns {boolean | promise}
  */
 var interceptor = function interceptor(response) {
-  var result = false;
-  if (!response) return false;
+  if (!response) return $q.reject(response);
   if (response.data) {
-    result = true;
+    return $q.resolve(response);
   } else {
-    result = true;
+    return $q.resolve(response);
   }
-  return result;
 };
 
 /**
@@ -2871,9 +2861,8 @@ var $resource = (function () {
   $resource.register = function register(id, url, params, actions, options) {
     if (id === undefined) id = Math.random().toFixed(6);
 
-    if ($resource.q[id]) {
-      console.error('API ' + id + ' can\'t be register twice');
-    }
+    if ($resource.q[id]) console.warn('API ' + id + ' can\'t be register twice');
+    url = hosts + url;
     $resource.q[id] = new $resource(url, params, actions, options);
     return $resource.q[id];
   };

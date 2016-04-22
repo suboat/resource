@@ -28,3 +28,4 @@ if (g.angular) {
 } else {
   window.$resource = $resource;
 }
+

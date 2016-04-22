@@ -1,0 +1,10 @@
+{
+  "name": "resource",
+  "description": "",
+  "main": "./dist/index.js",
+  "authors": [
+    "axetroy"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/suboat/-resouce"
+}

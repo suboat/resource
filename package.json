@@ -2,7 +2,7 @@
   "name": "resource",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "test": "mocha test --compilers js:babel-core/register"
   },
