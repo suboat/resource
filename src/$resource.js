@@ -5,10 +5,10 @@ let $http = function () {
 
 };
 
-let config = {
-  hosts:'',
-  withCredentials:false,
-  headers:{
+let CONFIG = {
+  hosts: '',
+  withCredentials: false,
+  headers: {
     Accept: 'application/json, text/plain, text/html, */*'
   }
 }
@@ -35,28 +35,19 @@ let interceptor = (response)=> {
  * $resource请求
  */
 class $resource {
-  constructor(url, registerParams = {}, actions = {}, options = {}) {
+  constructor(url, registerParams = {}, actions = {}, {timeout=null, cache=false} = {}) {
 
     // default actions
-    actions = $utils.extend(
-      {
-        'get': {method: 'GET'},
-        'post': {method: 'POST'},
-        'put': {method: 'PUT'},
-        'delete': {method: 'DELETE'},
-        'fetch': {method: 'GET'},
-        'save': {method: 'POST'},
-        'remove': {method: 'DELETE'},
-        'update': {method: 'PUT'}
-      }
-      , actions);
-
-    // default options
-    options = $utils.extend({
-      timeout: null,
-      cache: false
-    }, options);
-
+    actions = $utils.extend({
+      'get': {method: 'GET'},
+      'post': {method: 'POST'},
+      'put': {method: 'PUT'},
+      'delete': {method: 'DELETE'},
+      'fetch': {method: 'GET'},
+      'save': {method: 'POST'},
+      'remove': {method: 'DELETE'},
+      'update': {method: 'PUT'}
+    }, actions);
 
     class http {
       constructor() {
@@ -65,25 +56,38 @@ class $resource {
       };
     }
 
-    $utils.forEach(actions, function (object, methodName) {
+    $utils.forEach(actions, (object, methodName) => {
 
       // 设置header和拦截器和跨域请求
-      object.headers = object.headers ? object.headers : config.headers;
-      object.interceptor = object.interceptor ? object.interceptor : interceptor;
-      object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : config.withCredentials;
-      // 函数调用时，真正传入的参数
-      http.prototype[methodName] = function (params) {
-        let _url = $resource.parseParams(url, params);
-        return $http[object.method.toLowerCase()](_url, params, {
-          headers: object.headers,
-          withCredentials: object.withCredentials,
-          interceptor: object.interceptor,
-          timeout: options.timeout,
-          cache: options.cache
-        });
-      };
+      object.headers = object.headers ? object.headers : CONFIG.headers;
+    object.interceptor = object.interceptor ? object.interceptor : interceptor;
+    object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : CONFIG.withCredentials;
+    /**
+     * 函数调用时，真正传入的参数
+     * @param params      解析url的参数，如果为post，put等，则会放进requestBody
+     * @param privateConfig     私有设置，设置请求头等，只针对当前方法生效
+     * @returns {*}       $resource
+     */
+    http.prototype[methodName] = function (params = {}, privateConfig = {}) {
+      let _url = $resource.parseParams(url, params);
+      /**
+       * 发送http请求
+       * arguments:
+       *  1: 真正的url地址
+       *  2: 参数，如果位post，put等，则为requestBody
+       *  3: 配置项
+       *  4: 临时配置项，比如只配置此次调用
+       */
+      return $http[object.method.toLowerCase()](_url, params, {
+        headers: object.headers,
+        withCredentials: object.withCredentials,
+        interceptor: object.interceptor,
+        timeout,
+        cache
+      }, privateConfig);
+    };
 
-    });
+  });
 
     return new http();
 
@@ -91,11 +95,11 @@ class $resource {
 
   // 是否跨域
   static set withCredentials(boolean) {
-    config.withCredentials = !!boolean;
+    CONFIG.withCredentials = !!boolean;
   }
 
   static get withCredentials() {
-    return config.withCredentials;
+    return CONFIG.withCredentials;
   }
 
   // http
@@ -109,13 +113,13 @@ class $resource {
 
   // 获取header
   static get headers() {
-    return config.headers;
+    return CONFIG.headers;
   };
 
   // 设置header
   static set headers(json) {
-    if (!$utils.isObject(json)) return config.headers;
-    return $utils.extend(config.headers, json);
+    if (!$utils.isObject(json)) return CONFIG.headers;
+    return $utils.extend(CONFIG.headers, json);
   };
 
   // 获取拦截器
@@ -129,11 +133,11 @@ class $resource {
 
   // 设置api地址
   static set hosts(url) {
-    config.hosts = url;
+    CONFIG.hosts = url;
   }
 
-  static get hosts(){
-    return config.hosts;
+  static get hosts() {
+    return CONFIG.hosts;
   }
 
   /**
@@ -154,16 +158,16 @@ class $resource {
 
   /**
    * 注册api
-   * @param id
-   * @param url
-   * @param params
-   * @param actions
-   * @param options
-   * @returns {*}
+   * @param id          注册api的id
+   * @param url         api的url
+   * @param params      api的参数
+   * @param actions     添加自定义方法的action
+   * @param options     设置自定义的options
+   * @returns {*}       返回一个$resource实例，可以直接调用[get,post,put...]等方法
    */
   static register(id = Math.random().toFixed(6), url, params, actions, options) {
     if ($resource.q[id]) console.warn(`API ${id} can't be register twice`);
-    url = config.hosts + url;
+    url = CONFIG.hosts + url;
     $resource.q[id] = new $resource(url, params, actions, options);
     return $resource.q[id];
   };

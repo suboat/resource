@@ -44,7 +44,6 @@ let $http = function ({url='', method='', headers={}, withCredentials=false, dat
   XHR.$$data = data;
   XHR.$$cache = cache;
 
-
   XHR.warper = {
     resource: {
       $promise: deferred.promise
@@ -192,10 +191,10 @@ let format = (XHR)=> {
   'WRAPPED',
   'Extension-mothed']
   .forEach(function (method) {
-    $http[method.toLocaleLowerCase()] = function (url, params = {}, config) {
+    $http[method.toLocaleLowerCase()] = function (url = '', params = {}, config = {}, privateConfig = {}) {
       // 除GET方法外，其余带DATA
       let data = /^\s*GET/i.test(method) ? null : Object.keys(params).length ? params : null;
-      config = $utils.merge({url, method, data}, config);
+      config = $utils.merge({url, method, data}, config, privateConfig);
       return $http(config);
     };
 
