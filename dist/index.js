@@ -2738,12 +2738,15 @@ var format = function format(XHR) {
 };
 
 ['GET', 'POST', 'PUT', 'DELETE', 'FETCH', 'HEAD', 'DELETE', 'PATCH', 'OPTIONS', 'TRACE', 'CONNECT', 'MOVE', 'COPY', 'LINK', 'UNLINK', 'WRAPPED', 'Extension-mothed'].forEach(function (method) {
-  $http[method.toLocaleLowerCase()] = function (url, params, config) {
-    if (params === undefined) params = {};
+  $http[method.toLocaleLowerCase()] = function () {
+    var url = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+    var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var privateConfig = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
 
     // 除GET方法外，其余带DATA
     var data = /^\s*GET/i.test(method) ? null : Object.keys(params).length ? params : null;
-    config = $utils.merge({ url: url, method: method, data: data }, config);
+    config = $utils.merge({ url: url, method: method, data: data }, config, privateConfig);
     return $http(config);
   };
 });
@@ -2764,7 +2767,7 @@ var $q = require('q');
 
 var $http = function $http() {};
 
-var config = {
+var CONFIG = {
   hosts: '',
   withCredentials: false,
   headers: {
@@ -2798,7 +2801,13 @@ var $resource = (function () {
   function $resource(url) {
     var registerParams = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
     var actions = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+
+    var _ref = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+
+    var _ref$timeout = _ref.timeout;
+    var timeout = _ref$timeout === undefined ? null : _ref$timeout;
+    var _ref$cache = _ref.cache;
+    var cache = _ref$cache === undefined ? false : _ref$cache;
 
     _classCallCheck(this, $resource);
 
@@ -2814,12 +2823,6 @@ var $resource = (function () {
       'update': { method: 'PUT' }
     }, actions);
 
-    // default options
-    options = $utils.extend({
-      timeout: null,
-      cache: false
-    }, options);
-
     var http = function http() {
       _classCallCheck(this, http);
 
@@ -2830,19 +2833,35 @@ var $resource = (function () {
     $utils.forEach(actions, function (object, methodName) {
 
       // 设置header和拦截器和跨域请求
-      object.headers = object.headers ? object.headers : config.headers;
+      object.headers = object.headers ? object.headers : CONFIG.headers;
       object.interceptor = object.interceptor ? object.interceptor : interceptor;
-      object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : config.withCredentials;
-      // 函数调用时，真正传入的参数
-      http.prototype[methodName] = function (params) {
+      object.withCredentials = object.withCredentials !== undefined ? object.withCredentials : CONFIG.withCredentials;
+      /**
+       * 函数调用时，真正传入的参数
+       * @param params      解析url的参数，如果为post，put等，则会放进requestBody
+       * @param privateConfig     私有设置，设置请求头等，只针对当前方法生效
+       * @returns {*}       $resource
+       */
+      http.prototype[methodName] = function () {
+        var params = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+        var privateConfig = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
         var _url = $resource.parseParams(url, params);
+        /**
+         * 发送http请求
+         * arguments:
+         *  1: 真正的url地址
+         *  2: 参数，如果位post，put等，则为requestBody
+         *  3: 配置项
+         *  4: 临时配置项，比如只配置此次调用
+         */
         return $http[object.method.toLowerCase()](_url, params, {
           headers: object.headers,
           withCredentials: object.withCredentials,
           interceptor: object.interceptor,
-          timeout: options.timeout,
-          cache: options.cache
-        });
+          timeout: timeout,
+          cache: cache
+        }, privateConfig);
       };
     });
 
@@ -2868,19 +2887,19 @@ var $resource = (function () {
 
   /**
    * 注册api
-   * @param id
-   * @param url
-   * @param params
-   * @param actions
-   * @param options
-   * @returns {*}
+   * @param id          注册api的id
+   * @param url         api的url
+   * @param params      api的参数
+   * @param actions     添加自定义方法的action
+   * @param options     设置自定义的options
+   * @returns {*}       返回一个$resource实例，可以直接调用[get,post,put...]等方法
    */
 
   $resource.register = function register(id, url, params, actions, options) {
     if (id === undefined) id = Math.random().toFixed(6);
 
     if ($resource.q[id]) console.warn('API ' + id + ' can\'t be register twice');
-    url = config.hosts + url;
+    url = CONFIG.hosts + url;
     $resource.q[id] = new $resource(url, params, actions, options);
     return $resource.q[id];
   };
@@ -2890,10 +2909,10 @@ var $resource = (function () {
 
     // 是否跨域
     set: function set(boolean) {
-      config.withCredentials = !!boolean;
+      CONFIG.withCredentials = !!boolean;
     },
     get: function get() {
-      return config.withCredentials;
+      return CONFIG.withCredentials;
     }
 
     // http
@@ -2910,13 +2929,13 @@ var $resource = (function () {
   }, {
     key: 'headers',
     get: function get() {
-      return config.headers;
+      return CONFIG.headers;
     },
 
     // 设置header
     set: function set(json) {
-      if (!$utils.isObject(json)) return config.headers;
-      return $utils.extend(config.headers, json);
+      if (!$utils.isObject(json)) return CONFIG.headers;
+      return $utils.extend(CONFIG.headers, json);
     }
   }, {
     key: 'interceptor',
@@ -2933,10 +2952,10 @@ var $resource = (function () {
 
     // 设置api地址
     set: function set(url) {
-      config.hosts = url;
+      CONFIG.hosts = url;
     },
     get: function get() {
-      return config.hosts;
+      return CONFIG.hosts;
     }
   }]);
 
