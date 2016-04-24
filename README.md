@@ -96,12 +96,13 @@ $resource.interceptor = function(response, $q){
 ### $resource的方法
 
 - .register(id,url,params,actions,options)
+    > 注册api，对$resource的一层包装
     - ``id``:string
-        - 注册api的唯一标识符
+        - 必填，注册api的唯一标识符
     - ``url``:string
-        - api的url地址，为相对地址，比如``'/:path/:file.json'``
+        - 必填，api的url地址，为相对地址，比如``'/:path/:file.json'``
     - ``params``:object
-        - 绑定url中的通配符
+        - 绑定url中的通配符至传入到调用方法的params
     - ``actions``:object
         - 自定义方法
         ```bash
@@ -109,21 +110,59 @@ $resource.interceptor = function(response, $q){
          action2: {method:?, params:?, isArray:?, headers:?, ...},
          ...}
         ```
+        - 默认的actions
+        ```javascript
+        var defaultActions = {
+          get: {method: 'GET'},
+          query: {method: 'GET'},
+          post: {method: 'POST'},
+          save: {method: 'POST'},
+          create: {method: 'POST'},
+          put: {method: 'PUT'},
+          update: {method: 'PUT'},
+          fetch: {method: 'GET'},
+          delete: {method: 'DELETE'},
+          remove: {method: 'DELETE'},
+          options: {method: 'OPTIONS'},
+          head: {method: 'HEAD'},
+          patch: {method: 'PATCH'},
+          trace: {method: 'TRACE'},
+          connect: {method: 'CONNECT'},
+          move: {method: 'MOVE'},
+          copy: {method: 'COPY'},
+          link: {method: 'LINK'},
+          unlink: {method: 'UNLINK'},
+          wrapped: {method: 'WRAPPED'},
+          'extension-mothed': {method: 'Extension-mothed'}
+        }
+        ```
     - ``options``:object
         > 自定义配置，通过该api注册的所有方法，都通过这个配置，优先级低于actions
         - ``headers``:object
             - 设置请求头
         - ``interceptor``:function
-            - TODO
+             TODO
             - 设置拦截器，通过这个api的方法，都使用这个拦截器
         - ``withCredentials``：boolean
             - TODO
             - 设置是否跨域
     - ``return``：返回一个``new $resource(url,params,actions,options)``
 
+- $resource(url,params,actions,options)
+    > 生成一个$resource实例
+    - url:与$resource.register一致
+    - params：与$resource.register一致
+    - actions：与$resource.register一致
+    - options：与$resource.register一致
+    - return
+        > 返回一个内部的Http对象
+        > 该Http对象的原型(prototype)包含了所有actions的方法，包括默认actions和自定义actions
+        > 例如``new $resource(url,params,actions,options).get().$promise.then();``
+        > 例如``new $resource(url,params,actions,options).post().$promise.then();``
+        > 例如``new $resource(url,params,actions,options).put().$promise.then();``
 ### 例子
 
-1. 获取一个json文件
+- 获取一个json文件
 ```javascript
 var getJson = $resource.register('getJson','/data/:file.json');
 getJson.get({file:'demo'}).$promise
@@ -134,8 +173,19 @@ getJson.get({file:'demo'}).$promise
       console.log(error);
     });
 ```
+通过``new $resource()``的方法
+```javascript
+var getJson = new $resource('/data/:file.json');
+getJson.get({file:'demo'}).$promise
+    .then(function(resp){
+      var json = resp.data;
+      console.log(json);
+    },function(error){
+      console.log(error);
+    });
+```
 
-2. 获取某个用户信息
+- 获取某个用户信息
 ```javascript
 var getUser = $resource.register('userApi','/user/:uid');
 getUser.get({uid:'1'}).$promise
