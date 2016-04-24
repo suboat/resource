@@ -10,6 +10,7 @@
         1. [withCredentials](#withcredentials)
         1. [hosts](#hosts)
         1. [interceptor](#interceptor)
+        1. [q](#q)
     1. [方法](#resource的方法)
         1. [$resource()](#resource)
             1. [$resource的实例](#resource实例)
@@ -127,6 +128,11 @@ $resource.interceptor = function(response, $q){
     }
 }
 ```
+#### q
+
+$resource.q
+
+返回通过``$resource.register(id,url,params,actions,options)``注册的api
 
 ### $resource的方法
 
