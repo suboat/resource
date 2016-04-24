@@ -205,7 +205,10 @@ $resource的实例为一个内部的Http对象
 
 > 例如``new $resource(url,params,actions,options).put().$promise.then();``
 
-###### Http(params,config)
+###### Http\[action\](params,config)
+
+- action
+    方法，如get，post，put...
 
 - params
     参数，用于解析url地址，如果为post,put等方法，则会作为requestBody随着请求发送服务器
