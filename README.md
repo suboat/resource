@@ -57,6 +57,14 @@ var $resource = require('resource');
 $resource.responseType='json';
 ```
 
+可选的responseType
+- ''
+- 'text'
+- 'arraybuffer'
+- 'blob'
+- 'document'
+- 'json'
+
 #### headers
 
 设置全局的请求头，默认值:``{Accept: 'application/json, text/plain, text/html, */*'}``
