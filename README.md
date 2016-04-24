@@ -11,8 +11,8 @@
         1. [hosts](#hosts)
         1. [interceptor](#interceptor)
     1. [方法](#resource的方法)
-        1. [$resource(url,params,actions,options)](#resource(url,params,actions,options))
-        1. [$resource.register(id,url,params,actions,options)](#register(id,url,params,actions,options))
+        1. [$resource()](#resource)
+        1. [$resource.register()](#register)
 1. [demo](#例子)
     1. [demo1](#获取一个json文件)
     2. [demo2](#获取某个用户信息)
@@ -135,7 +135,9 @@ $resource.interceptor = function(response, $q){
 
 ### $resource的方法
 
-#### .register(id,url,params,actions,options)
+#### register
+
+$resource.register(id,url,params,actions,options)
 
 注册api，对$resource的一层包装
 
@@ -190,23 +192,27 @@ $resource.interceptor = function(response, $q){
         - 设置是否跨域
 - ``return``：返回一个``new $resource(url,params,actions,options)``
 
-- $resource(url,params,actions,options)
-    > 生成一个$resource实例
-    - url:与$resource.register一致
-    - params：与$resource.register一致
-    - actions：与$resource.register一致
-    - options：与$resource.register一致
+#### $resource
 
-    - return
-        > 返回一个内部的Http对象
+new $resource(url,params,actions,options)
 
-        > 该Http对象的原型(prototype)包含了所有actions的方法，包括默认actions和自定义actions
+生成一个$resource实例
 
-        > 例如``new $resource(url,params,actions,options).get().$promise.then();``
+- url:与$resource.register一致
+- params：与$resource.register一致
+- actions：与$resource.register一致
+- options：与$resource.register一致
 
-        > 例如``new $resource(url,params,actions,options).post().$promise.then();``
+- return
+    > 返回一个内部的Http对象
 
-        > 例如``new $resource(url,params,actions,options).put().$promise.then();``
+    > 该Http对象的原型(prototype)包含了所有actions的方法，包括默认actions和自定义actions
+
+    > 例如``new $resource(url,params,actions,options).get().$promise.then();``
+
+    > 例如``new $resource(url,params,actions,options).post().$promise.then();``
+
+    > 例如``new $resource(url,params,actions,options).put().$promise.then();``
 
 ### 例子
 
