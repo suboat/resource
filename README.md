@@ -14,6 +14,7 @@
         1. [$resource()](#resource)
         1. [$resource.register()](#register)
         1. [$resource.$http()](#http)
+1. [response的数据结构](#response的数据结构)
 1. [demo](#例子)
     1. [demo1](#获取一个json文件)
     2. [demo2](#获取某个用户信息)
@@ -85,26 +86,8 @@ $resource.hosts = 'localhost:8080';
 
 - response，不是纯粹的response，而是经过包装之后。结果与ngResource包装的基本一致
 
-    数据结构如下
-
-    - $$XHR：XMLHttpRequest
-    - config
-        - cache:boolean,是否缓存
-        - data:any,requestBody的数据
-        - headers:object，请求头
-        - method:string，请求方法
-        - responseType:string，响应类型
-        - url:string，请求的url地址
-        - withCredentials:boolean，是否跨域
-    - data:any，真正的后台返回的数据
-    - headers:object
-    - resource
-        - $promise:promise
-        - $resolve:boolean
-        - ...(response.data)
-    - status:number，状态码
-    - statusText:string，状态提示文本
-
+    [response的数据结构](#response的数据结构)
+    
 - $q，promise的[Q](https://github.com/kriskowal/q)库
 - return
     - promise
@@ -237,6 +220,37 @@ $resource.$http(config);
         - $promise
         - $resolve
         - ...(response.data)
+
+### response的数据结构
+
+```javascript
+new $resource('/user/:uid',{uid:'@uid'}).get().$promise
+    .then(function(response){
+
+    },function(response){
+
+    });
+```
+
+**response**
+
+- $$XHR：XMLHttpRequest
+- config
+    - cache:boolean,是否缓存
+    - data:any,requestBody的数据
+    - headers:object，请求头
+    - method:string，请求方法
+    - responseType:string，响应类型
+    - url:string，请求的url地址
+    - withCredentials:boolean，是否跨域
+- data:any，真正的后台返回的数据
+- headers:object
+- resource
+    - $promise:promise
+    - $resolve:boolean
+    - ...(response.data)
+- status:number，状态码
+- statusText:string，状态提示文本
 
 ### 例子
 
