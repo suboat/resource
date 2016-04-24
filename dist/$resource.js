@@ -92,6 +92,10 @@
 	      return _this;
 	    };
 
+	    this.setTransformHeaders = function (func) {
+	      $resource.transformHeaders.push(func);
+	    };
+
 	    this.$get = function () {
 	      return $resource;
 	    };
