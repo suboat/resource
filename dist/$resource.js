@@ -66,6 +66,32 @@
 
 	if (g.angular) {
 	  g.angular.module('$resource', []).provider('$resource', function () {
+	    var _this = this;
+
+	    this.setResponseType = function (value) {
+	      $resource.responseType = value;
+	      return _this;
+	    };
+
+	    this.setHeaders = function (value) {
+	      $resource.headers = value;
+	      return _this;
+	    };
+
+	    this.setWithCredentials = function (value) {
+	      $resource.withCredentials = value;
+	    };
+
+	    this.setHosts = function (value) {
+	      $resource.hosts = value;
+	      return _this;
+	    };
+
+	    this.setInterceptor = function (func) {
+	      $resource.interceptor = func;
+	      return _this;
+	    };
+
 	    this.$get = function () {
 	      return $resource;
 	    };

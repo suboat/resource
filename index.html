@@ -37,6 +37,10 @@
   getFile.get({dist: 'demo', file: 'test'}, {
     headers: {
       auth: true
+    },
+    interceptor: function (resp, $q) {
+      console.log(resp);
+      return $q.resolve(2333);
     }
   }).$promise
     .then(function (resp) {
