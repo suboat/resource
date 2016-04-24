@@ -10,7 +10,7 @@
         1. [withCredentials](#withcredentials)
         1. [hosts](#hosts)
         1. [interceptor](#interceptor)
-        1. [transformHeaders](#transformHeaders)
+        1. [transformHeaders](#transformheaders)
         1. [q](#q)
         1. [$utils](#utils)
     1. [方法](#resource的方法)
@@ -187,7 +187,7 @@ $resource.interceptor = function(response, $q){
 * @returns {*}        可以返回任意值，返回的值会经过下一轮的转换器转换，最后输出最终值
 */
 var transform = function(headers){
-  // 给所有 headers 添加 test = 'test' 
+  // 给所有 headers 添加 test = 'test'
   headers.test = 'test';
   return headers
 }
@@ -295,6 +295,12 @@ $resource.register(id,url,params,actions,options)
         - 设置拦截器，通过这个api的方法，都使用这个拦截器
     - ``withCredentials``：boolean
         - 设置是否跨域
+    - ``transformHeaders``:array
+
+        对请求头进行变形，详情参考[transformHeaders](#transformheaders)
+
+        设置了该参数，不会覆盖全局的``$resource.transformHeaders``，而是依次变形，得到最终结果
+
 - ``return``：返回一个``new $resource(url,params,actions,options)``
 
 #### $resource
@@ -340,7 +346,14 @@ $resource的实例为一个内部的Http对象
 - config
     配置项，与 $resource(url,params,actions,options) 中的 options一致
 
+    配置了该属性，会覆盖``全局设置``和``$resource的options中的设置``
+
     属于临时配置项，临时配置当前调用的方法
+
+
+
+    > transformHeaders
+        设置了该参数，不会覆盖全局的``$resource.transformHeaders``和``$resource的options``设置的变形器，而是依次变形，得到最终结果
 
 #### $http
 
