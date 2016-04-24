@@ -1,6 +1,6 @@
 
       /*
-      2016-04-24T05:06:10.076Z
+      2016-04-24T09:01:07.659Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -3515,6 +3515,8 @@
 	}();
 
 	$resource.q = {};
+
+	$resource.$utils = $utils;
 
 	module.exports = $resource;
 
