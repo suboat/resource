@@ -94,6 +94,7 @@
 
 	    this.setTransformHeaders = function (func) {
 	      $resource.transformHeaders.push(func);
+	      return this;
 	    };
 
 	    this.$get = function () {

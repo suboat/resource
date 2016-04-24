@@ -77,6 +77,10 @@ var $resource = require('resource');
 
             设置响应拦截器
 
+        - .setTransformHeaders(func)
+
+            设置默认的请求头转换器
+
     - $resource
 
         $resource服务就是$resource
