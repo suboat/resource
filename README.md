@@ -16,9 +16,10 @@
         1. [$resource.$http()](#http)
 1. [response的数据结构](#response的数据结构)
 1. [demo](#例子)
-    1. [demo1](#获取一个json文件)
-    2. [demo2](#获取某个用户信息)
-1. [项目构建](#项目构建)
+    1. [获取一个json文件](#获取一个json文件)
+    2. [获取某个用户信息](#获取某个用户信息)
+    2. [自定义某个API的headers](#自定义某个API的headers)
+1. [构建项目](#构建项目)
 
 ## 使用方法
 
@@ -37,7 +38,7 @@ bower install resource
 ```javascript
 import $resource from 'resource';
 // or
-require('resource');
+var $resource = require('resource');
 ```
 
 ## $resource对象
@@ -56,7 +57,7 @@ $resource.responseType='json';
 
 #### headers
 
-设置全局的请求头，默认值:{}
+设置全局的请求头，默认值:``{Accept: 'application/json, text/plain, text/html, */*'}``
 
 ```javascript
 $resource.headers = {
@@ -87,7 +88,7 @@ $resource.hosts = 'localhost:8080';
 - response，不是纯粹的response，而是经过包装之后。结果与ngResource包装的基本一致
 
     [response的数据结构](#response的数据结构)
-    
+
 - $q，promise的[Q](https://github.com/kriskowal/q)库
 - return
     - promise
@@ -169,7 +170,7 @@ $resource.register(id,url,params,actions,options)
     - ``headers``:object
         - 设置请求头
     - ``interceptor``:function
-         TODO
+        - TODO
         - 设置拦截器，通过这个api的方法，都使用这个拦截器
     - ``withCredentials``：boolean
         - TODO
@@ -190,13 +191,33 @@ new $resource(url,params,actions,options)
 - return
     > 返回一个内部的Http对象
 
-    > 该Http对象的原型(prototype)包含了所有actions的方法，包括默认actions和自定义actions
+### $resource实例
 
-    > 例如``new $resource(url,params,actions,options).get().$promise.then();``
+$resource的示例为一个内部的Http对象
 
-    > 例如``new $resource(url,params,actions,options).post().$promise.then();``
+> 该Http对象的原型(prototype)包含了所有actions的方法，包括默认actions和自定义actions
 
-    > 例如``new $resource(url,params,actions,options).put().$promise.then();``
+> 例如``new $resource(url,params,actions,options).get().$promise.then();``
+
+> 例如``new $resource(url,params,actions,options).post().$promise.then();``
+
+> 例如``new $resource(url,params,actions,options).put().$promise.then();``
+
+**Http(params,config)**
+
+- params
+    参数，用于解析url地址，如果为post,put等方法，则会作为requestBody随着请求发送服务器
+
+    例如： url:'/user/:uid'
+
+    params:{uid:'testUser'}
+
+    则会把地址解析成``'/user/testUser'``
+
+- config
+    配置项，与 $resource(url,params,actions,options) 中的 options一致
+
+    属于临时配置项，临时配置当前调用的方法
 
 #### $http
 
@@ -224,11 +245,12 @@ $resource.$http(config);
 ### response的数据结构
 
 ```javascript
-new $resource('/user/:uid',{uid:'@uid'}).get().$promise
+var userApi = new $resource('/user/:uid',{uid:'@uid'});
+userApi.get({user:'testUser'}).$promise
     .then(function(response){
-
+      console.log(response);
     },function(response){
-
+      console.error(response);
     });
 ```
 
@@ -280,6 +302,22 @@ getJson.get({file:'demo'}).$promise
 #### 获取某个用户信息
 ```javascript
 var getUser = $resource.register('userApi','/user/:uid');
+getUser.get({uid:'testUser'}).$promise
+    .then(function(resp){
+      console.log(resp);
+    },function(error){
+      console.error(error);
+    });
+```
+
+#### 自定义某个API的headers
+
+```javascript
+var getUser = $resource.register('userApi','/user/:uid',{uid:'@uid'},{},{
+  headers:{
+    auth:'test'
+  }
+});
 getUser.get({uid:'1'}).$promise
     .then(function(resp){
       console.log(resp);
@@ -287,6 +325,39 @@ getUser.get({uid:'1'}).$promise
       console.error(error);
     });
 ```
+
+通过getUser调用的所有方法，请求头都会加上{auth:'test'},比如
+
+```javascript
+getUser.get();
+getUser.post();
+getUser.put();
+...
+````
+
+#### 指定某个方法的请求头(尚未实现)
+
+```javascript
+var getUser = $resource.register('userApi','/user/:uid',{uid:'@uid'},{
+  // 自定义的actions
+  info:{
+    method:'GET',
+    headers:{
+      auth:'test'
+    }
+  }
+});
+
+// info方法，会添加请求头{auth:'test'}
+
+getUser.info({uid:'1'}).$promise
+    .then(function(resp){
+      console.log(resp);
+    },function(error){
+      console.error(error);
+    });
+```
+
 
 ### 构建项目
 
