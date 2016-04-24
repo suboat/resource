@@ -6,9 +6,11 @@ let $utils = require('./$utils');
 let $q = require('q');
 let $resource = require('./$resource');
 
-// 默认的请求头
-const HEADER = {
-  Accept: 'application/json, text/plain, text/html, */*'
+// 默认的配置
+let config = {
+  headers: {
+    Accept: 'application/json, text/plain, text/html, */*'
+  }
 };
 
 /**
@@ -22,20 +24,41 @@ const HEADER = {
  * @param timeout
  * @param eventHandlers
  * @param cache
- * @returns {*}
+ * @param responseType
+ * @returns {*}   promise
  */
-let $http = function ({url='', method='', headers={}, withCredentials=false, data=null, interceptor=$utils.noop, timeout=null, eventHandlers={}, cache=false}) {
+let $http = function ({
+  url='',
+  method='',
+  headers={},
+  withCredentials=false,
+  data=null,
+  interceptor=$utils.noop,
+  timeout=null,
+  eventHandlers={},
+  cache=false,
+  responseType=''
+}) {
 
-  if (!url || !method) return;
+  if (!url || !method) return $q.reject();
 
   let deferred = $q.defer();
 
-  let XHR = window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : window.XMLHttpRequest ? new XMLHttpRequest() : new XDomainRequest();
+  let XHR = window.XMLHttpRequest ? new XMLHttpRequest() :
+    window.XDomainRequest ? new XDomainRequest() :
+      window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") :
+        null;
+
+  if (!XHR) {
+    console.error('your browser is not support XMLHttpRequest');
+    return $q.reject();
+  }
 
   // CROS
   XHR.withCredentials = !!withCredentials;
+
   // timeout
-  if (timeout) XHR.timeout = timeout;
+  if (!!timeout) XHR.timeout = timeout;
 
   XHR.$$method = method;
 
@@ -44,142 +67,149 @@ let $http = function ({url='', method='', headers={}, withCredentials=false, dat
   XHR.$$data = data;
   XHR.$$cache = cache;
 
-  XHR.warper = {
+  XHR.warpper = {
     resource: {
-      $promise: deferred.promise
+      $promise: deferred.promise,
+      $resolve: false
     }
   };
 
   XHR.onreadystatechange = function (event) {
     if (XHR.readyState !== 4) return;
 
+    XHR.warpper = XHRWrapper(XHR);
+
     if (/^(2|3)/.test(XHR.status)) {
-
-      XHR.warper = XHRWraper(XHR, requestHeader, deferred.promise);
-
       // 经过拦截器筛选
-      let inter = interceptor(XHR.warper);
+      let inter = interceptor(XHR.warpper, $q);
+      ((inter)=> {
+        let deferred = $q.defer();
 
-      // 返回的是promise
-      if ($utils.isDefined(inter) && $utils.isObject(inter) && $utils.isFunction(inter.then)) {
-        inter.then(function (resp) {
-          XHR.warper.resource.$resolve = true;
-          deferred.resolve(resp || XHR.warper);
-        }, function (error) {
-          XHR.warper.resource.$resolve = false;
-          deferred.reject(error || XHR.warper);
-        });
-      }
-      // 返回的是布尔值
-      else if ($utils.isBoolean(inter)) {
-        if (!!interceptor(XHR.warper)) {
-          XHR.warper.resource.$resolve = true;
-          deferred.resolve(XHR.warper);
-        } else {
-          XHR.warper.resource.$resolve = false;
-          deferred.reject(XHR.warper);
+        // false || null || undefined
+        if (!inter) {
+          deferred.reject(XHR.warpper);
         }
-      }
-
+        // boolean=true
+        else if ($utils.isBoolean(inter)) {
+          deferred.resolve(XHR.warpper);
+        }
+        // promise
+        else if ($utils.isObject(inter) && $utils.isFunction(inter.then)) {
+          return inter;
+        }
+        // others
+        else {
+          deferred.reject(inter);
+        }
+        return deferred.promise;
+      })(inter)
+        .then(function (response) {
+          XHR.warpper.resource.$resolve = true;
+          deferred.resolve(response || XHR.warpper);
+        }, function (response) {
+          XHR.warpper.resource.$resolve = false;
+          deferred.reject(response || XHR.warpper);
+        });
     } else {
-      XHR.warper.resource.$resolve = false;
-      deferred.reject(XHR.warper);
+      XHR.warpper.resource.$resolve = false;
+      deferred.reject(XHR.warpper);
     }
   };
 
-  // '错误'
-  let ErrorHandler = {};
-  ['timeout', 'error', 'abort'].forEach((eventName)=> {
-    ErrorHandler[`on${eventName}`] = ()=> {
-    deferred.reject(XHR.warper);
-};
-});
-
-  ErrorHandler = $utils.merge(ErrorHandler, eventHandlers);
+  // XHR 事件
+  let errorFunc = (event, XHRWrapper)=> deferred.reject(XHRWrapper);
+  let ErrorHandler = $utils.merge({
+    ontimeout: errorFunc,
+    onerror: errorFunc,
+    onabort: errorFunc
+  }, eventHandlers);
 
   $utils.forEach(ErrorHandler, function (handler, eventName) {
-    XHR[eventName] = (XHR)=> {
-      $utils.isFunction(handler) && handler(XHR);
+    XHR[eventName] = (event)=> {
+      XHR.warpper = XHRWrapper(XHR);
+      if ($utils.isFunction(handler)) {
+        handler(event, XHR.warpper);
+      } else {
+        deferred.reject(XHR.warpper)
+      }
     }
   });
 
   XHR.open(method, url, true);
 
   // 设置头部信息，必须在链接服务器之后
-  let requestHeader = $utils.merge(HEADER, headers && $utils.isObject(headers) ? headers : {});
-  $utils.forEach(requestHeader, function (value, key) {
+  XHR.$$requestHeader = $utils.merge(config.headers, headers && $utils.isObject(headers) ? headers : {});
+  $utils.forEach(XHR.$$requestHeader, function (value, key) {
     XHR.setRequestHeader(key, value);
   });
 
+  /*
+   响应头，默认使用json
+   text
+   arraybuffer
+   blob
+   document
+   json
+   */
+  XHR.responseType = responseType;
+
   XHR.send(data ? JSON.stringify(data) : null);
 
-  return XHR.warper.resource;
+  return XHR.warpper.resource;
 };
 
 /**
- * 对XHR进行包装
+ * 对XHR对象进行包装
  * @param XHR
  * @constructor
  */
-let XHRWraper = (XHR, requireHeaders)=> {
+let XHRWrapper = (XHR)=> {
+  // config
   let config = {
-    headers: requireHeaders,
+    headers: XHR.$$requestHeader,
     method: XHR.$$method.toUpperCase(),
     withCredentials: XHR.withCredentials,
     url: XHR.$$url,
     data: XHR.$$data,
-    cache: XHR.$$cache
-  }
-  let data = format(XHR);
+    cache: XHR.$$cache,
+    responseType: XHR.responseType
+  };
 
-  // headers
-  let headers = getResponseHeaders(XHR);
+  // response header
+  let headers = (()=> {
+    let _headers = {};
+    let respHeaders = XHR.getAllResponseHeaders();
+    // response header按换行符分割
+    respHeaders.split(/\n/g).forEach(function (str) {
+      let match = str.split(':');
+      if (!match || match === str) return;
+      let key = match[0];
+      let value = match.slice(1).join(':');
+      if (!key || !value) return;
+      _headers[key.trim()] = value.trim();
+    });
+    return _headers;
+  })();
 
-  let resource = $utils.extend(XHR.warper.resource, {$resolve: false}, data || {})
+  // response data
+  let _jsonReg = /\/json/i;
+  let data = (_jsonReg.test(XHR.contentType) ||
+  _jsonReg.test(headers['content-type'])) ? $utils.fromJson(XHR.response) :
+    XHR.response;
 
-  return {config, data, headers, resource, status: XHR.status, statusText: XHR.statusText};
+  // the resource
+  let resource = $utils.extend(XHR.warpper.resource, {$resolve: false}, data || {});
 
-}
-
-// 格式化返回头
-let getResponseHeaders = (XHR)=> {
-  let headers = {};
-  let respHeaders = XHR.getAllResponseHeaders();
-  respHeaders.split(/\n/g).forEach(function (str, index) {
-    let match = /^([\s\S]+)\:([\s\S]+)$/i.exec(str);
-    if (!match || !match[1] || !match[2]) return;
-    let key = match[1].trim();
-    let value = match[2].trim();
-    headers[key] = value;
-  });
-  return headers;
+  return {$$XHR: XHR, config, data, headers, resource, status: XHR.status, statusText: XHR.statusText};
 };
 
-/**
- * 格式化response
- * @param XHR
- */
-let format = (XHR)=> {
-
-  let response = XHR.response;
-  let contentType = XHR.getResponseHeader('content-type');
-
-  // json
-  if (/\/json/.test(contentType)) {
-    return $utils.fromJSON(response);
-  } else {
-    return response;
-  }
-
-};
-
-['GET',
+[
+  'GET',
   'POST',
   'PUT',
   'DELETE',
   'FETCH',
   'HEAD',
-  'DELETE',
   'PATCH',
   'OPTIONS',
   'TRACE',
@@ -189,16 +219,23 @@ let format = (XHR)=> {
   'LINK',
   'UNLINK',
   'WRAPPED',
-  'Extension-mothed']
-  .forEach(function (method) {
-    $http[method.toLocaleLowerCase()] = function (url = '', params = {}, config = {}, privateConfig = {}) {
-      // 除GET方法外，其余带DATA
-      let data = /^\s*GET/i.test(method) ? null : Object.keys(params).length ? params : null;
-      config = $utils.merge({url, method, data}, config, privateConfig);
-      return $http(config);
-    };
+  'Extension-mothed'
+].forEach(function (method) {
+  /**
+   * http 各种方法
+   * @param url         真实的url地址
+   * @param params      参数
+   * @param config      配置项
+   * @returns {*}       promise
+   */
+  $http[method.toLocaleLowerCase()] = function (url = '', params = {}, config = {}) {
+    // 除GET方法外，其余带DATA
+    let data = /^\s*GET/i.test(method) ? null : Object.keys(params).length ? params : null;
+    config = $utils.merge({url, method, data}, config);
+    return $http(config);
+  };
 
-  });
+});
 
 $resource.$http = $http;
 

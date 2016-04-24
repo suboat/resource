@@ -6,35 +6,41 @@
 </head>
 <body>
 
-<h2>test for test</h2>
+<h4>test for $resource</h4>
 
-<script src="dist/index.js"></script>
+<script src="dist/$resource.js"></script>
 
 <script>
-
-  console.log(window);
-  console.log(window.$resource);
-
-  $resource.withCredentials = true;
-
-  $resource.interceptor = function (response) {
-    return false;
-  };
-
   $resource.headers = {
-    bbb: 56666
+    authlize: 'axetroy'
   };
 
-  var user = $resource.register('userApi', '/test.json', {}, {
-    getJSON: {
-      method: 'GET',
-      interceptor: function (response1) {
-        return true
-      }
+//  $resource.responseType = 'json';
+
+  // id url param actions options
+  var getFile = $resource.register('id', '/:path/:file.json', {
+    path: '@dist',
+    hello: '@world',
+    limit: '@limit',
+    page: 0
+  }, {
+    login: {
+      method: 'POST',
+      url: '/google'
+    }
+  }, {
+    headers: {
+      user: 'user'
     }
   });
 
-  user.getJSON()
+  console.log(getFile);
+
+  getFile.get({dist: 'demo', file: 'test', world: 'world'}, {
+    headers: {
+      auth: 'axetroy'
+    }
+  }).$promise
     .then(function (resp) {
       console.log(resp);
     }, function (error) {

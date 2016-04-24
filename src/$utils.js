@@ -3,7 +3,7 @@
  */
 
 // object.assign for merge and copy
-require('../node_modules/babel-polyfill/node_modules/core-js/modules/es6.object.assign');
+require('babel-polyfill/node_modules/core-js/modules/es6.object.assign');
 
 const TYPED_ARRAY_REGEXP = /^\[object (?:Uint8|Uint8Clamped|Uint16|Uint32|Int8|Int16|Int32|Float32|Float64)Array\]$/;
 
@@ -15,8 +15,8 @@ let merge;
 let extend;
 let copy;
 let forEach;
-let toJSON;
-let fromJSON;
+let toJson;
+let fromJson;
 
 let isDefined;
 let isUndefined;
@@ -166,8 +166,9 @@ forEach = (obj, func)=> {
 };
 
 
-fromJSON = (jsonString)=> {
+fromJson = (jsonString)=> {
   let json = null;
+  if (!isString(jsonString) && isObject(jsonString)) return jsonString;
   try {
     json = JSON.parse(jsonString);
   } catch (e) {
@@ -175,7 +176,7 @@ fromJSON = (jsonString)=> {
   return json;
 };
 
-toJSON = (object)=> {
+toJson = (object)=> {
   let str = null;
   try {
     str = JSON.stringify(object);
@@ -207,6 +208,6 @@ module.exports = {
   extend,
   copy,
   forEach,
-  fromJSON,
-  toJSON
+  fromJson,
+  toJson
 };

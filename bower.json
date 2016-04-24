@@ -1,10 +1,23 @@
 {
-  "name": "resource",
+  "name": "resouce-webpack",
   "description": "",
-  "main": "./dist/index.js",
+  "main": "index.js",
   "authors": [
     "axetroy"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/suboat/-resouce"
+  "moduleType": [
+    "globals"
+  ],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "test.json",
+    "index.html"
+  ]
 }

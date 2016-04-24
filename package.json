@@ -1,32 +1,38 @@
 {
-  "name": "resource",
+  "name": "resouce-webpack",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/index.js",
+  "main": "index.js",
   "scripts": {
-    "test": "mocha test --compilers js:babel-core/register"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --display-error-details --progress --colors --watch",
+    "serve": "webpack-dev-server --config webpack-dev-config.js  --inline --colors"
   },
-  "author": "axetroy",
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "babel-polyfill": "^6.7.4",
     "q": "^1.4.1"
   },
   "devDependencies": {
-    "babel-core": "^6.7.6",
+    "babel-core": "^6.7.7",
+    "babel-loader": "^6.2.4",
+    "babel-plugin-transform-es2015-block-scoping": "^6.7.1",
+    "babel-plugin-transform-flow-strip-types": "^6.7.0",
+    "babel-plugin-transform-runtime": "^6.7.5",
     "babel-preset-es2015": "^6.6.0",
-    "babelify": "^6.1.0",
-    "chai": "^3.5.0",
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^3.8.0",
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-concat": "^1.0.0",
-    "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-contrib-uglify": "^1.0.1",
-    "grunt-contrib-watch": "^0.6.1",
-    "http-server": "^0.9.0",
-    "mocha": "^2.4.5",
-    "time-grunt": "^1.3.0"
-  }
+    "babel-preset-react": "^6.5.0",
+    "transfer-webpack-plugin": "^0.1.4",
+    "webpack": "^1.13.0",
+    "webpack-dev-server": "^1.14.1"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "test.json",
+    "index.html"
+  ]
 }
