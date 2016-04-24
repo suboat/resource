@@ -3370,6 +3370,7 @@
 
 	      this.url = url;
 	      this.parmas = registerParams;
+	      this.transformHeaders = $utils.isArray(options.transformHeaders) ? options.transformHeaders : [];
 	    };
 
 	    $utils.forEach(actions, function (object, methodName) {
@@ -3400,6 +3401,8 @@
 	        {
 	          headers: $utils.merge(headers, options.headers, config.headers)
 	        });
+	        // 转换请求头
+	        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
 	        /**
 	         * 发送http请求
 	         * arguments:
@@ -3535,6 +3538,14 @@
 	    get: function get() {
 	      return CONFIG.hosts;
 	    }
+	  }, {
+	    key: 'transformHeaders',
+
+
+	    // 转换请求头
+	    get: function get() {
+	      return CONFIG.transformHeaders;
+	    }
 	  }]);
 
 	  return $resource;
@@ -3619,6 +3630,39 @@
 	  }
 
 	  _createClass($common, null, [{
+	    key: 'transformHeaders',
+	    value: function transformHeaders(headers) {
+	      return JSON.stringify(headers);
+	    }
+
+	    /**
+	     * 过滤器 | 变形器，用于数据的变形
+	     * @param transformList   一个由函数，组成的数组
+	     * @param value           要过滤的对象
+	     * @param index           [不填的参数]
+	     * @returns {*}           返回最终变形的结果
+	     */
+
+	  }, {
+	    key: 'transform',
+	    value: function transform(transformList, value) {
+	      var index = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+
+	      var transformFunction = transformList[index];
+	      // 传入的不是函数，则跳过
+	      if (typeof transformFunction !== 'function') return $common.transform(value, ++index);
+
+	      if (index < transformList.length - 1) {
+	        value = transformFunction(value);
+	        return $common.transform(transformList, value, ++index);
+	      } else if (index === transformList.length - 1) {
+	        // 最后一个
+	        return transformFunction(value);
+	      } else {
+	        return value;
+	      }
+	    }
+	  }, {
 	    key: 'defaultActions',
 	    get: function get() {
 	      return defaultActions;
@@ -3664,7 +3708,17 @@
 	    } else {
 	      return $q.resolve();
 	    }
-	  }
+	  },
+	  /**
+	   * 默认的转换请求头数组
+	   * 里面只能存储function
+	   */
+	  transformHeaders: [],
+	  /**
+	   * 默认的转换响应头头数组
+	   * 里面只能存储function
+	   */
+	  transformResponseHeaders: []
 	};
 
 	module.exports = CONFIG;

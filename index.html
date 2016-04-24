@@ -15,6 +15,13 @@
     authlize: 'hello world'
   };
 
+  console.log($resource.transformHeaders);
+
+  $resource.transformHeaders.push(function (value) {
+    value.diy = 'diy';
+    return value;
+  });
+
   // id url param actions options
   var getFile = $resource.register('id', '/:path/:file.json', {
     path: '@dist',
@@ -29,7 +36,14 @@
   }, {
     headers: {
       user: 'user'
-    }
+    },
+    transformHeaders: [function (value) {
+      value.t = 'test';
+      return value;
+    }, function (value) {
+      value.t2 = 'test2';
+      return value;
+    }]
   });
 
   console.log(getFile);
@@ -38,10 +52,10 @@
     headers: {
       auth: true
     },
-    interceptor: function (resp, $q) {
-      console.log(resp);
-      return $q.resolve(2333);
-    }
+    transformHeaders: [function (value) {
+      value.get = 'get';
+      return value;
+    }]
   }).$promise
     .then(function (resp) {
       console.info(resp);

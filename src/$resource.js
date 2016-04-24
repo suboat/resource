@@ -39,6 +39,8 @@ class $resource {
       constructor() {
         this.url = url;
         this.parmas = registerParams;
+        this.transformHeaders = $utils.isArray(options.transformHeaders) ?
+          options.transformHeaders : [];
       };
     }
 
@@ -67,6 +69,8 @@ class $resource {
           {
             headers: $utils.merge(headers, options.headers, config.headers)
           });
+        // 转换请求头
+        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
         /**
          * 发送http请求
          * arguments:
@@ -134,6 +138,11 @@ class $resource {
 
   static get hosts() {
     return CONFIG.hosts;
+  };
+
+  // 转换请求头
+  static get transformHeaders() {
+    return CONFIG.transformHeaders;
   };
 
   /**

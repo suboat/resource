@@ -60,6 +60,33 @@ class $common {
     return defaultOptions;
   };
 
+  static transformHeaders(headers) {
+    return JSON.stringify(headers);
+  }
+
+  /**
+   * 过滤器 | 变形器，用于数据的变形
+   * @param transformList   一个由函数，组成的数组
+   * @param value           要过滤的对象
+   * @param index           [不填的参数]
+   * @returns {*}           返回最终变形的结果
+   */
+  static transform(transformList, value, index = 0) {
+    let transformFunction = transformList[index];
+    // 传入的不是函数，则跳过
+    if (typeof transformFunction !== 'function') return $common.transform(value, ++index);
+
+    if (index < transformList.length - 1) {
+      value = transformFunction(value);
+      return $common.transform(transformList, value, ++index);
+    } else if (index === transformList.length - 1) {
+      // 最后一个
+      return transformFunction(value);
+    } else {
+      return value
+    }
+  }
+
 }
 
 module.exports = $common;
