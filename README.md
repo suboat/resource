@@ -1,5 +1,20 @@
 ## 基于原生XMLHTTPRequest,ES6语法编写，符合restful接口的http库
 
+## 文档目录
+
+- [使用方法](#使用方法)
+
+- [$resource对象]($resource对象)
+    - [属性](#$resource的属性)
+        - [responseType](#responseType)
+        - [headers](#headers)
+        - [withCredentials](#withCredentials)
+        - [hosts](#hosts)
+        - [interceptor](#interceptor)
+    - [方法](#$resource的方法)
+        - $resource(url,params,actions,options)
+        - $resource.register(id,url,params,actions,options)
+
 ## 使用方法
 
 bower:
@@ -26,17 +41,17 @@ require('resource');
 
 ### $resource的属性
 
-- .responseType
+####  responseType
 
-> 设置响应类型，默认为:'',比如设置为json
+设置响应类型，默认为:'',比如设置为json
 
 ```javascript
 $resource.responseType='json';
 ```
 
-- .headers
+#### headers
 
-> 设置全局的请求头，默认值:{}
+设置全局的请求头，默认值:{}
 
 ```javascript
 $resource.headers = {
@@ -44,38 +59,60 @@ $resource.headers = {
 }
 ```
 
-- .withCredentials
+#### withCredentials
 
-> 设置是否跨域，默认值：false
+设置是否跨域，默认值：false
 
 ```javascript
 $resource.withCredentials = true;
 ```
 
-- .hosts
+#### hosts
 
-> 设置接口的hosts地址，默认值：``window.location.host``
+设置接口的hosts地址，默认值：``window.location.host``
 
 ```javascript
 $resource.hosts = 'localhost:8080';
 ```
 
-- .interceptor
-    - response，不是纯粹的response，而是经过包装之后。结果与ngResource包装的基本一致
-    - $q，promise的[Q](https://github.com/kriskowal/q)库
-    - return
-        - promise
-            - 如果promise的``reject``，则调用的``then``为``reject``，``resolve``也一样
-            - 如果带data``$q.resolve(data)``，则最后调用的结果就是data
-        - boolean
-            - 如果为true，则视为``resolve``，为false视为``reject``
-            - data默认为response
-        - any
-            - 结果既不是promise，也不是boolean
-            - 一律视为``reject``，``reject``的data则为返回的值
-            - ``return undefined`` 等效于 ``return $q.reject(undefined)``
+#### interceptor
 
-> 设置对response的拦截器
+设置对response的拦截器
+
+- response，不是纯粹的response，而是经过包装之后。结果与ngResource包装的基本一致
+
+    数据结构如下
+
+    - $$XHR：XMLHttpRequest
+    - config
+        - cache:boolean,是否缓存
+        - data:any,requestBody的数据
+        - headers:object，请求头
+        - method:string，请求方法
+        - responseType:string，响应类型
+        - url:string，请求的url地址
+        - withCredentials:boolean，是否跨域
+    - data:any，真正的后台返回的数据
+    - headers:object
+    - resource
+        - $promise:promise
+        - $resolve:boolean
+        - ...(response.data)
+    - status:number，状态码
+    - statusText:string，状态提示文本
+
+- $q，promise的[Q](https://github.com/kriskowal/q)库
+- return
+    - promise
+        - 如果promise的``reject``，则调用的``then``为``reject``，``resolve``也一样
+        - 如果带data``$q.resolve(data)``，则最后调用的结果就是data
+    - boolean
+        - 如果为true，则视为``resolve``，为false视为``reject``
+        - data默认为response
+    - any
+        - 结果既不是promise，也不是boolean
+        - 一律视为``reject``，``reject``的data则为返回的值
+        - ``return undefined`` 等效于 ``return $q.reject(undefined)``
 
 ```javascript
 /**
@@ -95,7 +132,7 @@ $resource.interceptor = function(response, $q){
 
 ### $resource的方法
 
-- .register(id,url,params,actions,options)
+- [.register(id,url,params,actions,options)](#register)
     > 注册api，对$resource的一层包装
     - ``id``:string
         - 必填，注册api的唯一标识符
@@ -148,19 +185,25 @@ $resource.interceptor = function(response, $q){
             - 设置是否跨域
     - ``return``：返回一个``new $resource(url,params,actions,options)``
 
-- $resource(url,params,actions,options)
+- [$resource(url,params,actions,options)](#resource)
     > 生成一个$resource实例
     - url:与$resource.register一致
     - params：与$resource.register一致
     - actions：与$resource.register一致
     - options：与$resource.register一致
+
     - return
         > 返回一个内部的Http对象
+
         > 该Http对象的原型(prototype)包含了所有actions的方法，包括默认actions和自定义actions
+
         > 例如``new $resource(url,params,actions,options).get().$promise.then();``
+
         > 例如``new $resource(url,params,actions,options).post().$promise.then();``
+
         > 例如``new $resource(url,params,actions,options).put().$promise.then();``
-### 例子
+
+### [例子](#demo)
 
 - 获取一个json文件
 ```javascript
@@ -196,7 +239,7 @@ getUser.get({uid:'1'}).$promise
     });
 ```
 
-### 构建项目
+### [构建项目](#build)
 
 ```bash
 git clone https://github.com/suboat/resource.git
