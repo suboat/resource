@@ -2,19 +2,19 @@
 
 ## 文档目录
 
-- [使用方法](#使用方法)
-
-- [$resource对象]($resource对象)
-    - [属性](#$resource的属性)
-        - [responseType](#responseType)
-        - [headers](#headers)
-        - [withCredentials](#withCredentials)
-        - [hosts](#hosts)
-        - [interceptor](#interceptor)
-    - [方法](#$resource的方法)
-        - $resource(url,params,actions,options)
-        - $resource.register(id,url,params,actions,options)
-
+1. [使用方法](#使用方法)
+1. [$resource对象](#\$resource对象)
+    1. [属性](#\$resource的属性)
+        1. [responseType](#responseType)
+        1. [headers](#headers)
+        1. [withCredentials](#withcredentials)
+        1. [hosts](#hosts)
+        1. [interceptor](#interceptor)
+    1. [方法](#\$resource的方法)
+        1. $resource(url,params,actions,options)
+        1. $resource.register(id,url,params,actions,options)
+1. [demo](#例子)
+1. [项目构建](#项目构建)
 ## 使用方法
 
 bower:
@@ -35,11 +35,11 @@ import $resource from 'resource';
 require('resource');
 ```
 
-## $resource对象
+## \$resource对象
 
 整包输出$resource对象
 
-### $resource的属性
+### \$resource的属性
 
 ####  responseType
 
@@ -130,7 +130,7 @@ $resource.interceptor = function(response, $q){
 }
 ```
 
-### $resource的方法
+### \$resource的方法
 
 - [.register(id,url,params,actions,options)](#register)
     > 注册api，对$resource的一层包装
@@ -203,7 +203,7 @@ $resource.interceptor = function(response, $q){
 
         > 例如``new $resource(url,params,actions,options).put().$promise.then();``
 
-### [例子](#demo)
+### 例子
 
 - 获取一个json文件
 ```javascript
@@ -239,7 +239,7 @@ getUser.get({uid:'1'}).$promise
     });
 ```
 
-### [构建项目](#build)
+### 构建项目
 
 ```bash
 git clone https://github.com/suboat/resource.git
