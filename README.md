@@ -195,7 +195,7 @@ new $resource(url,params,actions,options)
 
 ##### $resource实例
 
-$resource的示例为一个内部的Http对象
+$resource的实例为一个内部的Http对象
 
 > 该Http对象的原型(prototype)包含了所有actions的方法，包括默认actions和自定义actions
 
