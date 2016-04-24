@@ -3,18 +3,19 @@
 ## 文档目录
 
 1. [使用方法](#使用方法)
-1. [$resource对象](#\$resource对象)
-    1. [属性](#\$resource的属性)
-        1. [responseType](#responseType)
+1. [$resource对象](#resource对象)
+    1. [属性](#resource的属性)
+        1. [responseType](#responsetype)
         1. [headers](#headers)
         1. [withCredentials](#withcredentials)
         1. [hosts](#hosts)
         1. [interceptor](#interceptor)
-    1. [方法](#\$resource的方法)
+    1. [方法](#resource的方法)
         1. $resource(url,params,actions,options)
         1. $resource.register(id,url,params,actions,options)
 1. [demo](#例子)
 1. [项目构建](#项目构建)
+
 ## 使用方法
 
 bower:
@@ -35,11 +36,11 @@ import $resource from 'resource';
 require('resource');
 ```
 
-## \$resource对象
+## $resource对象
 
 整包输出$resource对象
 
-### \$resource的属性
+### $resource的属性
 
 ####  responseType
 
@@ -130,7 +131,7 @@ $resource.interceptor = function(response, $q){
 }
 ```
 
-### \$resource的方法
+### $resource的方法
 
 - [.register(id,url,params,actions,options)](#register)
     > 注册api，对$resource的一层包装
