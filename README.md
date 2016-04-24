@@ -183,7 +183,7 @@ $resource.interceptor = function(response, $q){
 ```javascript
 /**
 * 对请求头的数据，进行转换
-* @param url          请求头
+* @param headers          请求头
 * @returns {*}        可以返回任意值，返回的值会经过下一轮的转换器转换，最后输出最终值
 */
 var transform = function(headers){
@@ -350,9 +350,8 @@ $resource的实例为一个内部的Http对象
 
     属于临时配置项，临时配置当前调用的方法
 
-
-
     > transformHeaders
+        详情参考[transformHeaders](#transformheaders)
         设置了该参数，不会覆盖全局的``$resource.transformHeaders``和``$resource的options``设置的变形器，而是依次变形，得到最终结果
 
 #### $http
@@ -493,7 +492,6 @@ getUser.info({uid:'1'}).$promise
       console.error(error);
     });
 ```
-
 
 ### 构建项目
 
