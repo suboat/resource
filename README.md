@@ -104,11 +104,13 @@ $resource.hosts = 'localhost:8080';
 - $q，promise的[Q](https://github.com/kriskowal/q)库
 - return
     - promise
-        - 如果promise的``reject``，则调用的``then``为``reject``，``resolve``也一样
+        - 如果promise为``reject``，则调用的``then``为``reject``，``resolve``也一样
         - 如果带data``$q.resolve(data)``，则最后调用的结果就是data
     - boolean
         - 如果为true，则视为``resolve``，为false视为``reject``
         - data默认为response
+        - ``return false`` 等效于 ``return $q.reject(response)``
+        - ``return true`` 等效于 ``return $q.resolve(response)``
     - any
         - 结果既不是promise，也不是boolean
         - 一律视为``reject``，``reject``的data则为返回的值
