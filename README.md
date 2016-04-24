@@ -12,13 +12,15 @@
         1. [interceptor](#interceptor)
     1. [方法](#resource的方法)
         1. [$resource()](#resource)
+            1. [$resource的实例](resource实例)
         1. [$resource.register()](#register)
         1. [$resource.$http()](#http)
 1. [response的数据结构](#response的数据结构)
 1. [demo](#例子)
     1. [获取一个json文件](#获取一个json文件)
     2. [获取某个用户信息](#获取某个用户信息)
-    2. [自定义某个API的headers](#自定义某个API的headers)
+    2. [自定义某个API的headers](#自定义某个api的headers)
+    2. [指定某个action的请求头](#指定某个action的请求头)
 1. [构建项目](#构建项目)
 
 ## 使用方法
@@ -191,7 +193,7 @@ new $resource(url,params,actions,options)
 - return
     > 返回一个内部的Http对象
 
-### $resource实例
+##### $resource实例
 
 $resource的示例为一个内部的Http对象
 
@@ -203,7 +205,7 @@ $resource的示例为一个内部的Http对象
 
 > 例如``new $resource(url,params,actions,options).put().$promise.then();``
 
-**Http(params,config)**
+###### Http(params,config)
 
 - params
     参数，用于解析url地址，如果为post,put等方法，则会作为requestBody随着请求发送服务器
@@ -335,7 +337,9 @@ getUser.put();
 ...
 ````
 
-#### 指定某个方法的请求头(尚未实现)
+#### 指定某个action的请求头
+
+尚未实现
 
 ```javascript
 var getUser = $resource.register('userApi','/user/:uid',{uid:'@uid'},{
