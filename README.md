@@ -10,6 +10,7 @@
         1. [withCredentials](#withcredentials)
         1. [hosts](#hosts)
         1. [interceptor](#interceptor)
+        1. [transformHeaders](#transformHeaders)
         1. [q](#q)
         1. [$utils](#utils)
     1. [方法](#resource的方法)
@@ -170,6 +171,29 @@ $resource.interceptor = function(response, $q){
     }
 }
 ```
+
+#### transformHeaders
+
+对请求头的转换器
+
+这个是全局的，意味着，发出的每一个请求，含有头部信息，都会经过这个列表的函数变形
+
+默认为空数组:[]
+
+```javascript
+/**
+* 对请求头的数据，进行转换
+* @param url          请求头
+* @returns {*}        可以返回任意值，返回的值会经过下一轮的转换器转换，最后输出最终值
+*/
+var transform = function(headers){
+  // 给所有 headers 添加 test = 'test' 
+  headers.test = 'test';
+  return headers
+}
+$resource.transformHeaders.push(transform)
+````
+
 #### q
 
 $resource.q
