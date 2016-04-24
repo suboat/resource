@@ -11,6 +11,7 @@
         1. [hosts](#hosts)
         1. [interceptor](#interceptor)
         1. [q](#q)
+        1. [$utils](#utils)
     1. [方法](#resource的方法)
         1. [$resource()](#resource)
             1. [$resource的实例](#resource实例)
