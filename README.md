@@ -12,6 +12,7 @@
         1. [interceptor](#interceptor)
         1. [transformHeaders](#transformheaders)
         1. [q](#q)
+        1. [$q](#qq)
         1. [$utils](#utils)
     1. [方法](#resource的方法)
         1. [$resource()](#resource)
@@ -203,6 +204,14 @@ $resource.transformHeaders.push(transform)
 $resource.q
 
 返回通过``$resource.register(id,url,params,actions,options)``注册的api
+
+#### $QQ
+
+$resource.$q
+
+返回 [Q](https://github.com/kriskowal/q)库
+
+用于操作promise
 
 ### $utils
 
