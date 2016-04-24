@@ -36,7 +36,8 @@ module.exports = {
           presets: ['es2015'],
           plugins: [
             'transform-flow-strip-types',
-            'transform-es2015-block-scoping'
+            'transform-es2015-block-scoping',
+            'transform-regenerator'
             // 'transform-runtime'
           ]
         }

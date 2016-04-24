@@ -34,7 +34,11 @@
 
   console.log(getFile);
 
-  getFile.get({dist: 'demo', file: 'test'}).$promise
+  getFile.get({dist: 'demo', file: 'test'}, {
+    headers: {
+      auth: true
+    }
+  }).$promise
     .then(function (resp) {
       console.info(resp);
       console.log(123, JSON.stringify(resp));

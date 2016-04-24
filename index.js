@@ -1,4 +1,3 @@
-
 let $http = require('./src/$http');
 
 let $resource = require('./src/$resource');
