@@ -49,6 +49,45 @@ var $resource = require('resource');
 
 整包输出$resource对象
 
+分别以3中情况输出
+
+- AngularJs
+
+    自动生成一个$resource模块，里面有$resource服务
+
+    - $resourceProvider
+        - .setResponseType(type)
+
+            设置响应类型
+
+        - .setHeaders(headers)
+
+            设置全局的请求头
+
+        - .setWithCredentials(boolean)
+
+            设置是否跨域
+
+        - .setHosts(hosts)
+
+            设置API地址
+
+        - .setInterceptor(func)
+
+            设置响应拦截器
+
+    - $resource
+
+        $resource服务就是$resource
+
+- jQuery
+
+    挂载到 $.fn.$resource 下
+
+- window
+
+    以上两个条件都不满足，则挂载在全局作用于下
+
 ### $resource的属性
 
 ####  responseType
@@ -223,14 +262,14 @@ $resource.register(id,url,params,actions,options)
     }
     ```
 - ``options``:object
-    > 自定义配置，通过该api注册的所有方法，都通过这个配置，优先级低于actions
+
+    自定义配置，通过该api注册的所有方法，都通过这个配置，优先级低于actions
+
     - ``headers``:object
         - 设置请求头
     - ``interceptor``:function
-        - TODO
         - 设置拦截器，通过这个api的方法，都使用这个拦截器
     - ``withCredentials``：boolean
-        - TODO
         - 设置是否跨域
 - ``return``：返回一个``new $resource(url,params,actions,options)``
 
@@ -388,7 +427,7 @@ getUser.get({uid:'1'}).$promise
 
 通过getUser调用的所有方法，请求头都会加上{auth:'test'},比如
 
-```javascript
+```bash
 getUser.get();
 getUser.post();
 getUser.put();
@@ -396,8 +435,6 @@ getUser.put();
 ````
 
 #### 指定某个action的请求头
-
-尚未实现
 
 ```javascript
 var getUser = $resource.register('userApi','/user/:uid',{uid:'@uid'},{
