@@ -181,6 +181,8 @@ class $resource {
 
 $resource.q = {};
 
+$resource.$utils = $utils;
+
 module.exports = $resource;
 
 /*
