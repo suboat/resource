@@ -1,6 +1,6 @@
 
       /*
-      2016-04-23T19:59:02.368Z
+      2016-04-24T05:06:10.076Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -611,7 +611,7 @@
 /* 7 */
 /***/ function(module, exports) {
 
-	var core = module.exports = {version: '2.2.2'};
+	var core = module.exports = {version: '2.3.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
