@@ -7,6 +7,31 @@ let g = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ?
 if (g.angular) {
   g.angular.module('$resource', [])
     .provider('$resource', function () {
+
+      this.setResponseType = (value)=> {
+        $resource.responseType = value;
+        return this;
+      };
+
+      this.setHeaders = (value)=> {
+        $resource.headers = value;
+        return this
+      };
+
+      this.setWithCredentials = (value)=> {
+        $resource.withCredentials = value;
+      };
+
+      this.setHosts = (value)=> {
+        $resource.hosts = value;
+        return this;
+      };
+
+      this.setInterceptor = (func)=> {
+        $resource.interceptor = func;
+        return this;
+      };
+
       this.$get = function () {
         return $resource;
       }
