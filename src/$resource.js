@@ -1,6 +1,7 @@
 let $utils = require('./$utils');
 let $common = require('./$common');
 let CONFIG = require('./$resource.config');
+let $q = require('q');
 
 let $http = function () {
 
@@ -191,6 +192,7 @@ class $resource {
 $resource.q = {};
 
 $resource.$utils = $utils;
+$resource.$q = $q;
 
 module.exports = $resource;
 

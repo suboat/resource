@@ -3330,6 +3330,7 @@
 	var $utils = __webpack_require__(3);
 	var $common = __webpack_require__(44);
 	var CONFIG = __webpack_require__(45);
+	var $q = __webpack_require__(40);
 
 	var $http = function $http() {};
 
@@ -3559,6 +3560,7 @@
 	$resource.q = {};
 
 	$resource.$utils = $utils;
+	$resource.$q = $q;
 
 	module.exports = $resource;
 
