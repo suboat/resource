@@ -3,7 +3,7 @@
 ## 文档目录
 
 1. [使用方法](#使用方法)
-1. [$resource对象](#resource对象)
+1. [$resource](#resource对象)
     1. [属性](#resource的属性)
         1. [responseType](#responsetype)
         1. [headers](#headers)
@@ -13,6 +13,7 @@
     1. [方法](#resource的方法)
         1. [$resource()](#resource)
         1. [$resource.register()](#register)
+        1. [$resource.$http()](#http)
 1. [demo](#例子)
     1. [demo1](#获取一个json文件)
     2. [demo2](#获取某个用户信息)
@@ -213,6 +214,29 @@ new $resource(url,params,actions,options)
     > 例如``new $resource(url,params,actions,options).post().$promise.then();``
 
     > 例如``new $resource(url,params,actions,options).put().$promise.then();``
+
+#### $http
+
+$resource的底层方法，每个$resource实例，都会调用$http
+
+$resource.$http(config);
+
+- **config**
+    - url
+    - method
+    - headers
+    - withCredentials
+    - data
+    - interceptor
+    - timeout(尚未实现)
+    - eventHandlers
+    - cache(尚未实现)
+    - responseType
+- return
+    - response.resource
+        - $promise
+        - $resolve
+        - ...(response.data)
 
 ### 例子
 
