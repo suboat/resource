@@ -134,6 +134,44 @@ $resource.q
 
 返回通过``$resource.register(id,url,params,actions,options)``注册的api
 
+### $utils
+
+$resource.$utils
+
+内部的工具集合
+
+
+```javascript
+var $utils = $resource.$utils;
+console.log($utils);
+{
+  noop,
+  isDefined,
+  isUndefined,
+  isArray,
+  isDate,
+  isBoolean,
+  isElement,
+  isNumber,
+  isObject,
+  isString,
+  isFunction,
+  isRegExp,
+  isWindow,
+  isFile,
+  isBlob,
+  isTypedArray,
+  isArrayBuffer,
+  equals,
+  merge,
+  extend,
+  copy,
+  forEach,
+  fromJson,
+  toJson
+}
+```
+
 ### $resource的方法
 
 #### register
