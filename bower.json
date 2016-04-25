@@ -1,5 +1,5 @@
 {
-  "name": "resouce",
+  "name": "resource",
   "description": "",
   "main": "./dist/$resource.js",
   "authors": [
