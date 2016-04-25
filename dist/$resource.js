@@ -1,6 +1,6 @@
 
       /*
-      2016-04-25T02:12:51.036Z
+      2016-04-25T02:25:04.070Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -80,6 +80,7 @@
 
 	    this.setWithCredentials = function (value) {
 	      $resource.withCredentials = value;
+	      return _this;
 	    };
 
 	    this.setHosts = function (value) {
