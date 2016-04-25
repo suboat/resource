@@ -1,6 +1,6 @@
 
       /*
-      2016-04-25T02:25:04.070Z
+      2016-04-25T04:14:17.163Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -3353,8 +3353,12 @@
 	    // default options
 	    options = $utils.merge($common.defaultOptions, options);
 
+	    // actions.uid = Math.random();
+
 	    $utils.forEach(actions, function (action) {
-	      $utils.extend(action, { url: url });
+	      action.url = url;
+	      // $utils.extend(action, {url});
+
 	      var query = [];
 	      $utils.forEach(registerParams, function (value, key) {
 	        // 匹配url地址上，是否出现  :xxx
@@ -3368,6 +3372,7 @@
 	          bindReg.test(value) ? query.push(key + '=' + ':' + value.replace(bindReg, '')) : query.push(key + '=' + value);
 	        }
 	      });
+
 	      query = query.join('&');
 	      action.url += (/\?/.test(action.url) ? '&' : '?') + query;
 	    });
@@ -3377,10 +3382,12 @@
 
 	      this.url = url;
 	      this.parmas = registerParams;
+	      this.actions = actions;
+	      this.options = options;
 	      this.transformHeaders = $utils.isArray(options.transformHeaders) ? options.transformHeaders : [];
 	    };
 
-	    $utils.forEach(actions, function (object, methodName) {
+	    $utils.forEach(actions, function (object, action) {
 
 	      // 设置header和拦截器和跨域请求
 	      var headers = object.headers || CONFIG.headers;
@@ -3393,7 +3400,7 @@
 	       * @param config      私有设置，设置请求头等，只针对当前方法生效
 	       * @returns {*}       $resource
 	       */
-	      Http.prototype[methodName] = function () {
+	      Http.prototype[action] = function () {
 	        var realParams = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	        var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
@@ -3475,8 +3482,9 @@
 	      var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
 
 	      if ($resource.q[id]) console.warn('API ' + id + ' can\'t be register twice');
-	      $resource.q[id] = new $resource(url, params, actions, options);
-	      return $resource.q[id];
+	      var api = new $resource(url, params, actions, options);
+	      $resource.q[id] = api;
+	      return api;
 	    }
 	  }, {
 	    key: 'withCredentials',
@@ -3590,48 +3598,6 @@
 	var $utils = __webpack_require__(3);
 	var CONFIG = __webpack_require__(45);
 
-	var defaultActions = {
-	  get: {
-	    method: 'GET',
-	    url: '',
-	    params: {},
-	    isArray: false,
-	    transformRequest: $utils.noop,
-	    transformResponse: $utils.noop,
-	    cache: false,
-	    timeout: null,
-	    cancellable: false,
-	    withCredentials: CONFIG.withCredentials,
-	    responseType: '',
-	    interceptor: null
-	  },
-	  query: { method: 'GET' },
-	  post: { method: 'POST' },
-	  save: { method: 'POST' },
-	  create: { method: 'POST' },
-	  put: { method: 'PUT' },
-	  update: { method: 'PUT' },
-	  fetch: { method: 'GET' },
-	  delete: { method: 'DELETE' },
-	  remove: { method: 'DELETE' },
-	  options: { method: 'OPTIONS' },
-	  head: { method: 'HEAD' },
-	  patch: { method: 'PATCH' },
-	  trace: { method: 'TRACE' },
-	  connect: { method: 'CONNECT' },
-	  move: { method: 'MOVE' },
-	  copy: { method: 'COPY' },
-	  link: { method: 'LINK' },
-	  unlink: { method: 'UNLINK' },
-	  wrapped: { method: 'WRAPPED' },
-	  'extension-mothed': { method: 'Extension-mothed' }
-	};
-
-	var defaultOptions = {
-	  cache: false,
-	  timeout: null
-	};
-
 	var $common = function () {
 	  function $common() {
 	    _classCallCheck(this, $common);
@@ -3676,12 +3642,37 @@
 	  }, {
 	    key: 'defaultActions',
 	    get: function get() {
-	      return defaultActions;
+	      return {
+	        get: { method: 'GET' },
+	        query: { method: 'GET' },
+	        post: { method: 'POST' },
+	        save: { method: 'POST' },
+	        create: { method: 'POST' },
+	        put: { method: 'PUT' },
+	        update: { method: 'PUT' },
+	        fetch: { method: 'GET' },
+	        delete: { method: 'DELETE' },
+	        remove: { method: 'DELETE' },
+	        options: { method: 'OPTIONS' },
+	        head: { method: 'HEAD' },
+	        patch: { method: 'PATCH' },
+	        trace: { method: 'TRACE' },
+	        connect: { method: 'CONNECT' },
+	        move: { method: 'MOVE' },
+	        copy: { method: 'COPY' },
+	        link: { method: 'LINK' },
+	        unlink: { method: 'UNLINK' },
+	        wrapped: { method: 'WRAPPED' },
+	        'extension-mothed': { method: 'Extension-mothed' }
+	      };
 	    }
 	  }, {
 	    key: 'defaultOptions',
 	    get: function get() {
-	      return defaultOptions;
+	      return {
+	        cache: false,
+	        timeout: null
+	      };
 	    }
 	  }]);
 

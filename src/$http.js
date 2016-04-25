@@ -85,24 +85,24 @@ let $http = function ({
       ((inter)=> {
         let deferred = $q.defer();
 
-        // false || null || undefined
-        if (!inter) {
-          deferred.reject(XHR.warpper);
-        }
-        // boolean=true
-        else if ($utils.isBoolean(inter)) {
-          deferred.resolve(XHR.warpper);
-        }
-        // promise
-        else if ($utils.isObject(inter) && $utils.isFunction(inter.then)) {
-          return inter;
-        }
-        // others
-        else {
-          deferred.reject(inter);
-        }
-        return deferred.promise;
-      })(inter)
+      // false || null || undefined
+      if (!inter) {
+        deferred.reject(XHR.warpper);
+      }
+      // boolean=true
+      else if ($utils.isBoolean(inter)) {
+        deferred.resolve(XHR.warpper);
+      }
+      // promise
+      else if ($utils.isObject(inter) && $utils.isFunction(inter.then)) {
+        return inter;
+      }
+      // others
+      else {
+        deferred.reject(inter);
+      }
+      return deferred.promise;
+    })(inter)
         .then(function (response) {
           XHR.warpper.resource.$resolve = true;
           deferred.resolve(response || XHR.warpper);
@@ -177,19 +177,19 @@ let XHRWrapper = (XHR)=> {
 
   // response header
   let headers = (()=> {
-    let _headers = {};
-    let respHeaders = XHR.getAllResponseHeaders();
-    // response header按换行符分割
-    respHeaders.split(/\n/g).forEach(function (str) {
-      let match = str.split(':');
-      if (!match || match === str) return;
-      let key = match[0];
-      let value = match.slice(1).join(':');
-      if (!key || !value) return;
-      _headers[key.trim()] = value.trim();
-    });
-    return _headers;
-  })();
+      let _headers = {};
+  let respHeaders = XHR.getAllResponseHeaders();
+  // response header按换行符分割
+  respHeaders.split(/\n/g).forEach(function (str) {
+    let match = str.split(':');
+    if (!match || match === str) return;
+    let key = match[0];
+    let value = match.slice(1).join(':');
+    if (!key || !value) return;
+    _headers[key.trim()] = value.trim();
+  });
+  return _headers;
+})();
 
   // response data
   let _jsonReg = /\/json/i;

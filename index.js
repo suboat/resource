@@ -20,7 +20,7 @@ if (g.angular) {
 
       this.setWithCredentials = (value)=> {
         $resource.withCredentials = value;
-		 return this;
+        return this;
       };
 
       this.setHosts = (value)=> {

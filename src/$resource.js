@@ -17,73 +17,79 @@ class $resource {
     // default options
     options = $utils.merge($common.defaultOptions, options);
 
-    $utils.forEach(actions, (action)=> {
-      $utils.extend(action, {url});
-      let query = [];
-      $utils.forEach(registerParams, (value, key)=> {
-        // 匹配url地址上，是否出现  :xxx
-        let inlineReg = new RegExp(':' + key, 'g');
-        // 匹配params的value值，是否使用通配符绑定数值
-        let bindReg = /^\@/;
-        if (inlineReg.test(action.url)) {
-          action.url = bindReg.test(value) ? action.url.replace(inlineReg, ':' + value.replace(bindReg, '')) : action.url.replace(inlineReg, value);
-        } else {
-          // 以@开头 例如 '@limit'
-          bindReg.test(value) ? query.push(key + '=' + ':' + value.replace(bindReg, '')) : query.push(key + '=' + value);
-        }
-      });
-      query = query.join('&');
-      action.url += (/\?/.test(action.url) ? '&' : '?') + query;
-    });
+    // actions.uid = Math.random();
 
+    $utils.forEach(actions, (action)=> {
+      action.url = url;
+    // $utils.extend(action, {url});
+
+    let query = [];
+    $utils.forEach(registerParams, (value, key)=> {
+      // 匹配url地址上，是否出现  :xxx
+      let inlineReg = new RegExp(':' + key, 'g');
+    // 匹配params的value值，是否使用通配符绑定数值
+    let bindReg = /^\@/;
+    if (inlineReg.test(action.url)) {
+      action.url = bindReg.test(value) ? action.url.replace(inlineReg, ':' + value.replace(bindReg, '')) : action.url.replace(inlineReg, value);
+    } else {
+      // 以@开头 例如 '@limit'
+      bindReg.test(value) ? query.push(key + '=' + ':' + value.replace(bindReg, '')) : query.push(key + '=' + value);
+    }
+  });
+
+    query = query.join('&');
+    action.url += (/\?/.test(action.url) ? '&' : '?') + query;
+  });
     class Http {
       constructor() {
         this.url = url;
         this.parmas = registerParams;
+        this.actions = actions;
+        this.options = options;
         this.transformHeaders = $utils.isArray(options.transformHeaders) ?
           options.transformHeaders : [];
       };
     }
 
-    $utils.forEach(actions, (object, methodName) => {
+    $utils.forEach(actions, (object, action) => {
 
       // 设置header和拦截器和跨域请求
       let headers = object.headers || CONFIG.headers;
-      let interceptor = object.interceptor || CONFIG.interceptor;
-      let responseType = object.responseType || CONFIG.responseType;
-      let withCredentials = object.withCredentials !== undefined ? !!object.withCredentials : CONFIG.withCredentials;
+    let interceptor = object.interceptor || CONFIG.interceptor;
+    let responseType = object.responseType || CONFIG.responseType;
+    let withCredentials = object.withCredentials !== undefined ? !!object.withCredentials : CONFIG.withCredentials;
+    /**
+     * 实例化之后，真正调用的函数
+     * @param realParams      解析url的参数，如果为post，put等，则会放进requestBody
+     * @param config      私有设置，设置请求头等，只针对当前方法生效
+     * @returns {*}       $resource
+     */
+    Http.prototype[action] = function (realParams = {}, config = {}) {
+      let _url = $resource.parseParams(CONFIG.hosts + object.url, realParams);
+      let _config = $utils.merge({
+          headers,
+          withCredentials,
+          interceptor,
+          responseType
+        }, options, config,
+        // 合并所有headers
+        {
+          headers: $utils.merge(headers, options.headers, config.headers)
+        });
+      // 转换请求头
+      _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
       /**
-       * 实例化之后，真正调用的函数
-       * @param realParams      解析url的参数，如果为post，put等，则会放进requestBody
-       * @param config      私有设置，设置请求头等，只针对当前方法生效
-       * @returns {*}       $resource
+       * 发送http请求
+       * arguments:
+       *  1: 真正的url地址
+       *  2: 参数，如果为post，put等，则为requestBody
+       *  3: 配置项
+       *  4: 临时配置项，比如只配置此次调用
        */
-      Http.prototype[methodName] = function (realParams = {}, config = {}) {
-        let _url = $resource.parseParams(CONFIG.hosts + object.url, realParams);
-        let _config = $utils.merge({
-            headers,
-            withCredentials,
-            interceptor,
-            responseType
-          }, options, config,
-          // 合并所有headers
-          {
-            headers: $utils.merge(headers, options.headers, config.headers)
-          });
-        // 转换请求头
-        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
-        /**
-         * 发送http请求
-         * arguments:
-         *  1: 真正的url地址
-         *  2: 参数，如果为post，put等，则为requestBody
-         *  3: 配置项
-         *  4: 临时配置项，比如只配置此次调用
-         */
-        return $http[object.method.toLowerCase()](_url, realParams, _config);
-      };
+      return $http[object.method.toLowerCase()](_url, realParams, _config);
+    };
 
-    });
+  });
 
     return new Http();
 
@@ -152,7 +158,7 @@ class $resource {
    * @param params
    * @returns {*}
    */
-  static parseParams(url, params):string {
+  static parseParams(url, params) {
     if (!$utils.isObject(params)) return url;
 
     // 把参数对应填到url的  :xxx  上
@@ -183,8 +189,9 @@ class $resource {
    */
   static register(id = Math.random().toFixed(6), url = '', params = {}, actions = {}, options = {}) {
     if ($resource.q[id]) console.warn(`API ${id} can't be register twice`);
-    $resource.q[id] = new $resource(url, params, actions, options);
-    return $resource.q[id];
+    let api = new $resource(url, params, actions, options);
+    $resource.q[id] = api;
+    return api;
   };
 
 }
