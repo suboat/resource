@@ -1,5 +1,5 @@
 {
-  "name": "resouce-webpack",
+  "name": "resouce",
   "description": "",
   "main": "./dist/$resource.js",
   "authors": [
