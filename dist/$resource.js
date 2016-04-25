@@ -1,6 +1,6 @@
 
       /*
-      2016-04-24T14:20:27.631Z
+      2016-04-25T02:12:51.036Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -642,7 +642,7 @@
 /* 7 */
 /***/ function(module, exports) {
 
-	var core = module.exports = {version: '2.3.0'};
+	var core = module.exports = {version: '2.2.2'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
@@ -3656,6 +3656,9 @@
 	      var index = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
 
 	      var transformFunction = transformList[index];
+
+	      if (transformList || !transformList.length) return value;
+
 	      // 传入的不是函数，则跳过
 	      if (typeof transformFunction !== 'function') return $common.transform(value, ++index);
 
