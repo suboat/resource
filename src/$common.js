@@ -54,10 +54,10 @@ class $common {
    * @param index           [不填的参数]
    * @returns {*}           返回最终变形的结果
    */
-  static transform(transformList, value, index = 0) {
+  static transform(transformList = [], value, index = 0) {
     let transformFunction = transformList[index];
 
-    if (transformList || !transformList.length) return value;
+    if (!transformList || !transformList.length) return value;
 
     // 传入的不是函数，则跳过
     if (typeof transformFunction !== 'function') return $common.transform(value, ++index);
