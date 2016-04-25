@@ -1,6 +1,6 @@
 
       /*
-      2016-04-25T04:14:17.163Z
+      2016-04-25T05:58:00.617Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -3619,12 +3619,14 @@
 
 	  }, {
 	    key: 'transform',
-	    value: function transform(transformList, value) {
+	    value: function transform() {
+	      var transformList = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+	      var value = arguments[1];
 	      var index = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
 
 	      var transformFunction = transformList[index];
 
-	      if (transformList || !transformList.length) return value;
+	      if (!transformList || !transformList.length) return value;
 
 	      // 传入的不是函数，则跳过
 	      if (typeof transformFunction !== 'function') return $common.transform(value, ++index);
