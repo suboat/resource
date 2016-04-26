@@ -21,25 +21,38 @@ class $resource {
 
     $utils.forEach(actions, (action)=> {
       action.url = url;
-    // $utils.extend(action, {url});
+      // $utils.extend(action, {url});
 
-    let query = [];
-    $utils.forEach(registerParams, (value, key)=> {
-      // 匹配url地址上，是否出现  :xxx
-      let inlineReg = new RegExp(':' + key, 'g');
-    // 匹配params的value值，是否使用通配符绑定数值
-    let bindReg = /^\@/;
-    if (inlineReg.test(action.url)) {
-      action.url = bindReg.test(value) ? action.url.replace(inlineReg, ':' + value.replace(bindReg, '')) : action.url.replace(inlineReg, value);
-    } else {
-      // 以@开头 例如 '@limit'
-      bindReg.test(value) ? query.push(key + '=' + ':' + value.replace(bindReg, '')) : query.push(key + '=' + value);
-    }
-  });
+      let query = [];
+      $utils.forEach(registerParams, (value, key)=> {
+        // 匹配url地址上，是否出现  :xxx
+        let inlineReg = new RegExp(':' + key, 'g');
+        // 匹配params的value值，是否使用通配符绑定数值
+        let bindReg = /^\@/;
+        if (inlineReg.test(action.url)) {
+          if (bindReg.test(value)) {
+            action.url = action.url.replace(inlineReg, ':' + value.replace(bindReg, ''))
+          } else {
+            action.url = action.url.replace(inlineReg, value);
+          }
+          // action.url = bindReg.test(value) ? action.url.replace(inlineReg, ':' + value.replace(bindReg, '')) : action.url.replace(inlineReg, value);
+        } else {
+          // 以@开头 例如 '@limit'
+          if (bindReg.test(value)) {
+            query.push(key + '=' + ':' + value.replace(bindReg, ''))
+          } else {
+            query.push(key + '=' + value);
+          }
+          // bindReg.test(value) ? query.push(key + '=' + ':' + value.replace(bindReg, '')) : query.push(key + '=' + value);
+        }
+      });
 
-    query = query.join('&');
-    action.url += (/\?/.test(action.url) ? '&' : '?') + query;
-  });
+      if (query.length) {
+        query = query.join('&');
+        action.url += (/\?/.test(action.url) ? '&' : '?') + query;
+      }
+
+    });
     class Http {
       constructor() {
         this.url = url;
@@ -55,41 +68,41 @@ class $resource {
 
       // 设置header和拦截器和跨域请求
       let headers = object.headers || CONFIG.headers;
-    let interceptor = object.interceptor || CONFIG.interceptor;
-    let responseType = object.responseType || CONFIG.responseType;
-    let withCredentials = object.withCredentials !== undefined ? !!object.withCredentials : CONFIG.withCredentials;
-    /**
-     * 实例化之后，真正调用的函数
-     * @param realParams      解析url的参数，如果为post，put等，则会放进requestBody
-     * @param config      私有设置，设置请求头等，只针对当前方法生效
-     * @returns {*}       $resource
-     */
-    Http.prototype[action] = function (realParams = {}, config = {}) {
-      let _url = $resource.parseParams(CONFIG.hosts + object.url, realParams);
-      let _config = $utils.merge({
-          headers,
-          withCredentials,
-          interceptor,
-          responseType
-        }, options, config,
-        // 合并所有headers
-        {
-          headers: $utils.merge(headers, options.headers, config.headers)
-        });
-      // 转换请求头
-      _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
+      let interceptor = object.interceptor || CONFIG.interceptor;
+      let responseType = object.responseType || CONFIG.responseType;
+      let withCredentials = object.withCredentials !== undefined ? !!object.withCredentials : CONFIG.withCredentials;
       /**
-       * 发送http请求
-       * arguments:
-       *  1: 真正的url地址
-       *  2: 参数，如果为post，put等，则为requestBody
-       *  3: 配置项
-       *  4: 临时配置项，比如只配置此次调用
+       * 实例化之后，真正调用的函数
+       * @param realParams      解析url的参数，如果为post，put等，则会放进requestBody
+       * @param config      私有设置，设置请求头等，只针对当前方法生效
+       * @returns {*}       $resource
        */
-      return $http[object.method.toLowerCase()](_url, realParams, _config);
-    };
+      Http.prototype[action] = function (realParams = {}, config = {}) {
+        let _url = $resource.parseParams(CONFIG.hosts + object.url, realParams);
+        let _config = $utils.merge({
+            headers,
+            withCredentials,
+            interceptor,
+            responseType
+          }, options, config,
+          // 合并所有headers
+          {
+            headers: $utils.merge(headers, options.headers, config.headers)
+          });
+        // 转换请求头
+        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
+        /**
+         * 发送http请求
+         * arguments:
+         *  1: 真正的url地址
+         *  2: 参数，如果为post，put等，则为requestBody
+         *  3: 配置项
+         *  4: 临时配置项，比如只配置此次调用
+         */
+        return $http[object.method.toLowerCase()](_url, realParams, _config);
+      };
 
-  });
+    });
 
     return new Http();
 
@@ -158,16 +171,82 @@ class $resource {
    * @param params
    * @returns {*}
    */
-  static parseParams(url, params) {
+  static parseParams(url, params = {}) {
     if (!$utils.isObject(params)) return url;
 
-    // 把参数对应填到url的  :xxx  上
+    /**
+     * 把参数对应填到url的  :xxx  上
+     * 例如：
+     * url    /:path/:file.json
+     * params {path:'demo',file:'test'}
+     *
+     * 生成    /demo/test.json
+     */
     $utils.forEach(params, function (value, key) {
       url = url.replace(new RegExp(':' + key, 'g'), value);
     });
 
-    // 把未传入的  :xxx  填空
+
+    /**
+     * 如果还有未传入的参数，但是url上面却有通配符
+     * 例如：
+     * url    /:path/:file.json?:user&pwd=:pwd
+     *
+     * params {file:'test'}
+     *
+     * url需要4个字段填充，但是params只传入一个
+     * 以下进行处理
+     */
+
+    let urlParts = url.split('?');        // 切割url
+    let _url = urlParts[0];               // /:path/:file.json
+    let queryString = urlParts[1];        // :user&pwd=:pwd
+
+    // 处理查询字符串
+    if (queryString && /\:[^\&]+/.test(queryString)) {
+      let queryArr = [];
+
+      // 替换查询字符串的通配符
+      if (/\:([a-z_\$][\w\$]*)/.test(queryString)) {
+
+        /**
+         * 以 & 切割查询字符串
+         * [':user','pwd=:pwd']
+         */
+        queryString.split('&').forEach((group)=> {
+          let _match = group.split('=');
+          let key = _match[0];                      // 查询字符串的key
+          let value = _match[1];                    // 查询字符串的value
+          /**
+           * 如果不存在value值， :user
+           */
+          if (!value) {
+            // 如果key值是通配符 :user
+            if (/^\s*\:([\w]+)/i.test(key)) {
+              // 拼接成  user=
+              key = key.replace(/^\s*\:([\w]+)/i, '$1');
+            }
+            queryArr.push(key + '=');
+          }
+          // 如果存在value值，  pwd=:pwd
+          else {
+            // 拼接成  pwd=:pwd
+            queryArr.push(key + '=' + value);
+          }
+        });
+
+      }
+      url = _url + '?' + queryArr.join('&');
+    }
+
+    /**
+     * 把未传入的通配符清空
+     * :path        >>> ''
+     * pwd=:pwd     >>> pwd=''
+     */
+
     url = url.replace(/\:[a-z_\$][\w\$]*/ig, '');
+
     return url;
   };
 
@@ -202,11 +281,3 @@ $resource.$utils = $utils;
 $resource.$q = $q;
 
 module.exports = $resource;
-
-/*
-
- 使用示例
-
- var userApi = $resource.register('get-user','/api/v1/user');
-
- */

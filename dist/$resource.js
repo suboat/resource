@@ -1,6 +1,6 @@
 
       /*
-      2016-04-26T13:06:38.318Z
+      2016-04-26T13:13:22.079Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -313,14 +313,14 @@
 	      var key = match[0];
 	      var value = match.slice(1).join(':');
 	      if (!key || !value) return;
-	      _headers[key.trim()] = value.trim();
+	      _headers[key.trim().toLocaleLowerCase()] = value.trim();
 	    });
 	    return _headers;
 	  }();
 
 	  // response data
 	  var _jsonReg = /\/json/i;
-	  var data = _jsonReg.test(headers['Content-Type']) ? $utils.fromJson(XHR.response) : XHR.response;
+	  var data = _jsonReg.test(headers['content-type']) ? $utils.fromJson(XHR.response) : XHR.response;
 
 	  // the resource
 	  var resource = $utils.extend(XHR.warpper.resource, { $resolve: false }, data || {});
@@ -3366,15 +3366,27 @@
 	        // 匹配params的value值，是否使用通配符绑定数值
 	        var bindReg = /^\@/;
 	        if (inlineReg.test(action.url)) {
-	          action.url = bindReg.test(value) ? action.url.replace(inlineReg, ':' + value.replace(bindReg, '')) : action.url.replace(inlineReg, value);
+	          if (bindReg.test(value)) {
+	            action.url = action.url.replace(inlineReg, ':' + value.replace(bindReg, ''));
+	          } else {
+	            action.url = action.url.replace(inlineReg, value);
+	          }
+	          // action.url = bindReg.test(value) ? action.url.replace(inlineReg, ':' + value.replace(bindReg, '')) : action.url.replace(inlineReg, value);
 	        } else {
-	          // 以@开头 例如 '@limit'
-	          bindReg.test(value) ? query.push(key + '=' + ':' + value.replace(bindReg, '')) : query.push(key + '=' + value);
-	        }
+	            // 以@开头 例如 '@limit'
+	            if (bindReg.test(value)) {
+	              query.push(key + '=' + ':' + value.replace(bindReg, ''));
+	            } else {
+	              query.push(key + '=' + value);
+	            }
+	            // bindReg.test(value) ? query.push(key + '=' + ':' + value.replace(bindReg, '')) : query.push(key + '=' + value);
+	          }
 	      });
 
-	      query = query.join('&');
-	      action.url += (/\?/.test(action.url) ? '&' : '?') + query;
+	      if (query.length) {
+	        query = query.join('&');
+	        action.url += (/\?/.test(action.url) ? '&' : '?') + query;
+	      }
 	    });
 
 	    var Http = function Http() {
@@ -3442,16 +3454,84 @@
 	     * @param params
 	     * @returns {*}
 	     */
-	    value: function parseParams(url, params) {
+	    value: function parseParams(url) {
+	      var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
 	      if (!$utils.isObject(params)) return url;
 
-	      // 把参数对应填到url的  :xxx  上
+	      /**
+	       * 把参数对应填到url的  :xxx  上
+	       * 例如：
+	       * url    /:path/:file.json
+	       * params {path:'demo',file:'test'}
+	       *
+	       * 生成    /demo/test.json
+	       */
 	      $utils.forEach(params, function (value, key) {
 	        url = url.replace(new RegExp(':' + key, 'g'), value);
 	      });
 
-	      // 把未传入的  :xxx  填空
+	      /**
+	       * 如果还有未传入的参数，但是url上面却有通配符
+	       * 例如：
+	       * url    /:path/:file.json?:user&pwd=:pwd
+	       *
+	       * params {file:'test'}
+	       *
+	       * url需要4个字段填充，但是params只传入一个
+	       * 以下进行处理
+	       */
+
+	      var urlParts = url.split('?'); // 切割url
+	      var _url = urlParts[0]; // /:path/:file.json
+	      var queryString = urlParts[1]; // :user&pwd=:pwd
+
+	      // 处理查询字符串
+	      if (queryString && /\:[^\&]+/.test(queryString)) {
+	        (function () {
+	          var queryArr = [];
+
+	          // 替换查询字符串的通配符
+	          if (/\:([a-z_\$][\w\$]*)/.test(queryString)) {
+
+	            /**
+	             * 以 & 切割查询字符串
+	             * [':user','pwd=:pwd']
+	             */
+	            queryString.split('&').forEach(function (group) {
+	              var _match = group.split('=');
+	              var key = _match[0]; // 查询字符串的key
+	              var value = _match[1]; // 查询字符串的value
+	              /**
+	               * 如果不存在value值， :user
+	               */
+	              if (!value) {
+	                // 如果key值是通配符 :user
+	                if (/^\s*\:([\w]+)/i.test(key)) {
+	                  // 拼接成  user=
+	                  key = key.replace(/^\s*\:([\w]+)/i, '$1');
+	                }
+	                queryArr.push(key + '=');
+	              }
+	              // 如果存在value值，  pwd=:pwd
+	              else {
+	                  // 拼接成  pwd=:pwd
+	                  queryArr.push(key + '=' + value);
+	                }
+	            });
+	          }
+	          url = _url + '?' + queryArr.join('&');
+	        })();
+	      }
+
+	      /**
+	       * 把未传入的通配符清空
+	       * :path        >>> ''
+	       * pwd=:pwd     >>> pwd=''
+	       */
+
 	      url = url.replace(/\:[a-z_\$][\w\$]*/ig, '');
+
 	      return url;
 	    }
 	  }, {
@@ -3572,14 +3652,6 @@
 	$resource.$q = $q;
 
 	module.exports = $resource;
-
-	/*
-
-	 使用示例
-
-	 var userApi = $resource.register('get-user','/api/v1/user');
-
-	 */
 
 /***/ },
 /* 44 */

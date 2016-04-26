@@ -16,32 +16,14 @@
   };
 
   // id url param actions options
-  var getFile = $resource.register('id', '/:path/:file.json', {
-    path: '@dist',
-    hello: '@world',
-    limit: '@limit',
-    page: 0
-  }, {
-    login: {
-      method: 'POST',
-      url: '/google'
-    }
-  }, {
-    headers: {
-      user: 'user'
-    },
-    transformHeaders: [function (value) {
-      value.t = 'test';
-      return value;
-    }, function (value) {
-      value.t2 = 'test2';
-      return value;
-    }]
+  var getFile = $resource.register('id', '/:path/:file.json?hello=:hello&:user&pwd=:pwd', {
+    pwd: '@password',
+    test: '@test'
   });
 
   console.log(getFile);
 
-  getFile.get({dist: 'demo', file: 'test'}, {
+  getFile.get({dist: 'demo', file: 'test', hello: 'world', password: '123123'}, {
     headers: {
       auth: true
     }

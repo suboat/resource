@@ -186,14 +186,14 @@ let XHRWrapper = (XHR)=> {
     let key = match[0];
     let value = match.slice(1).join(':');
     if (!key || !value) return;
-    _headers[key.trim()] = value.trim();
+    _headers[key.trim().toLocaleLowerCase()] = value.trim();
   });
   return _headers;
 })();
 
   // response data
   let _jsonReg = /\/json/i;
-  let data = (_jsonReg.test(headers['Content-Type'])) ? $utils.fromJson(XHR.response) :
+  let data = (_jsonReg.test(headers['content-type'])) ? $utils.fromJson(XHR.response) :
     XHR.response;
 
   // the resource
