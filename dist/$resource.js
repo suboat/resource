@@ -1,6 +1,6 @@
 
       /*
-      2016-04-25T05:58:00.617Z
+      2016-04-26T13:06:38.318Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -320,7 +320,7 @@
 
 	  // response data
 	  var _jsonReg = /\/json/i;
-	  var data = _jsonReg.test(XHR.contentType) || _jsonReg.test(headers['content-type']) ? $utils.fromJson(XHR.response) : XHR.response;
+	  var data = _jsonReg.test(headers['Content-Type']) ? $utils.fromJson(XHR.response) : XHR.response;
 
 	  // the resource
 	  var resource = $utils.extend(XHR.warpper.resource, { $resolve: false }, data || {});
@@ -643,7 +643,7 @@
 /* 7 */
 /***/ function(module, exports) {
 
-	var core = module.exports = {version: '2.2.2'};
+	var core = module.exports = {version: '2.3.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },

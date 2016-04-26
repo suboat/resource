@@ -193,8 +193,7 @@ let XHRWrapper = (XHR)=> {
 
   // response data
   let _jsonReg = /\/json/i;
-  let data = (_jsonReg.test(XHR.contentType) ||
-  _jsonReg.test(headers['content-type'])) ? $utils.fromJson(XHR.response) :
+  let data = (_jsonReg.test(headers['Content-Type'])) ? $utils.fromJson(XHR.response) :
     XHR.response;
 
   // the resource
