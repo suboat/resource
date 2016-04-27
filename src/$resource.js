@@ -90,7 +90,7 @@ class $resource {
             headers: $utils.merge(headers, options.headers, config.headers)
           });
         // 转换请求头
-        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
+        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), _config.headers);
         /**
          * 发送http请求
          * arguments:
