@@ -211,7 +211,6 @@ class $resource {
        */
       queryString.split('&').forEach((group)=> {
         let _match = group.split('=');
-        console.log(_match);
         let [key='',value=''] = [_match[0], _match[1]];
         /**
          * 如果不存在value值， :user
@@ -265,7 +264,10 @@ class $resource {
    * @returns {*}       返回一个$resource实例，可以直接调用[get,post,put...]等方法
    */
   static register(id = Math.random().toFixed(6), url = '', params = {}, actions = {}, options = {}) {
-    if ($resource.q[id]) console.warn(`API ${id} can't be register twice`);
+    if ($resource.q[id]) {
+      console.warn(`API ${id} can't be register twice`);
+      id += Math.random().toFixed(6);
+    }
     let api = new $resource(url, params, actions, options);
     $resource.q[id] = api;
     return api;
