@@ -67,6 +67,34 @@ class $common {
     } else {
       return value
     }
+  };
+
+  /**
+   * 处理函数的返回值
+   * @param value
+   * @param defaultReturnVal
+   * @returns {promise}
+   */
+  static returnValueHandler(value, defaultReturnVal) {
+    let [deferred,val] = [$q.defer(), value];
+
+    if ($utils.isFunction(value)) val = value();
+
+    // false || undefined || null || NaN
+    if (!val) {
+      deferred.reject(defaultReturnVal);
+    }
+    // true
+    else if ($utils.isBoolean(val)) {
+      deferred.resolve(defaultReturnVal);
+    }
+    // promise
+    else if ($utils.isObject(val) && $utils.isFunction(val.then)) {
+      return val;
+    } else {
+      deferred.reject(value);
+    }
+    return deferred.promise;
   }
 
 }

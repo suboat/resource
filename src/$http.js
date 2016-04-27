@@ -5,6 +5,7 @@
 let $utils = require('./$utils');
 let $q = require('q');
 let $resource = require('./$resource');
+let $common = require('./$common');
 
 // 默认的配置
 let config = {
@@ -72,7 +73,7 @@ let $http = function ({
     }
   };
 
-  XHR.onreadystatechange = function (event) {
+  XHR.onreadystatechange = ()=> {
     if (XHR.readyState !== 4) return;
 
     XHR.warpper = XHRWrapper(XHR);
@@ -80,31 +81,11 @@ let $http = function ({
     if (/^(2|3)/.test(XHR.status)) {
       // 经过拦截器筛选
       let inter = interceptor(XHR.warpper, $q);
-      ((inter)=> {
-        let deferred = $q.defer();
-
-      // false || null || undefined
-      if (!inter) {
-        deferred.reject(XHR.warpper);
-      }
-      // boolean=true
-      else if ($utils.isBoolean(inter)) {
-        deferred.resolve(XHR.warpper);
-      }
-      // promise
-      else if ($utils.isObject(inter) && $utils.isFunction(inter.then)) {
-        return inter;
-      }
-      // others
-      else {
-        deferred.reject(inter);
-      }
-      return deferred.promise;
-    })(inter)
-        .then(function (response) {
+      $common.returnValueHandler(inter, XHR.warpper)
+        .then((response)=> {
           XHR.warpper.resource.$resolve = true;
           deferred.resolve(response || XHR.warpper);
-        }, function (response) {
+        }, (response)=> {
           XHR.warpper.resource.$resolve = false;
           deferred.reject(response || XHR.warpper);
         });
@@ -122,24 +103,24 @@ let $http = function ({
     onabort: errorFunc
   }, eventHandlers);
 
-  $utils.forEach(ErrorHandler, function (handler, eventName) {
+  $utils.forEach(ErrorHandler, function (handler = $utils.noop, eventName) {
     XHR[eventName] = (event)=> {
       XHR.warpper = XHRWrapper(XHR);
-      if ($utils.isFunction(handler)) {
-        handler(event, XHR.warpper);
-      } else {
-        deferred.reject(XHR.warpper)
+      $utils.isFunction(handler) && handler(event, XHR.warpper);
+
+      if (/(ontimeout|onerror|onabort)/i.test(eventName)) {
+        XHR.warpper.resource.$resolve = false;
+        deferred.reject(XHR.warpper);
       }
+
     }
   });
 
   XHR.open(method, url, true);
 
-  // 设置头部信息，必须在链接服务器之后
-  XHR.$$requestHeader = $utils.merge(config.headers, headers && $utils.isObject(headers) ? headers : {});
-  $utils.forEach(XHR.$$requestHeader, function (value, key) {
-    XHR.setRequestHeader(key, value);
-  });
+  // 设置头部信息，必须在open服务器之后
+  XHR.$$requestHeader = $utils.merge(config.headers, headers);
+  $utils.forEach(XHR.$$requestHeader, (value, key)=> XHR.setRequestHeader(key, value));
 
   /*
    响应头，默认使用json
@@ -175,27 +156,24 @@ let XHRWrapper = (XHR)=> {
 
   // response header
   let headers = (()=> {
-      let _headers = {};
-  let respHeaders = XHR.getAllResponseHeaders();
-  // response header按换行符分割
-  respHeaders.split(/\n/g).forEach(function (str) {
-    let match = str.split(':');
-    if (!match || match === str) return;
-    let key = match[0];
-    let value = match.slice(1).join(':');
-    if (!key || !value) return;
-    _headers[key.trim().toLocaleLowerCase()] = value.trim();
-  });
-  return _headers;
-})();
+    let _headers = {};
+    let respHeaders = XHR.getAllResponseHeaders();
+    // response header按换行符分割
+    respHeaders.split(/\n/g).forEach(function (str) {
+      let match = str.split(':'), key, value;
+      if (!match || !match.length || !match[0]) return;
+      key = match[0];
+      value = match.length <= 1 ? '' : match.slice(1).join(':');
+      _headers[key.trim().toLowerCase()] = value.trim();
+    });
+    return _headers;
+  })();
 
   // response data
-  let _jsonReg = /\/json/i;
-  let data = (_jsonReg.test(headers['content-type'])) ? $utils.fromJson(XHR.response) :
-    XHR.response;
+  let data = /\/json/i.test(headers['content-type']) ? $utils.fromJson(XHR.response) : XHR.response;
 
   // the resource
-  let resource = $utils.extend(XHR.warpper.resource, {$resolve: false}, data || {});
+  let resource = $utils.extend(XHR.warpper.resource, data || {});
 
   return {$$XHR: XHR, config, data, headers, resource, status: XHR.status, statusText: XHR.statusText};
 };
