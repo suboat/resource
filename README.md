@@ -25,6 +25,7 @@
     1. [获取某个用户信息](#获取某个用户信息)
     1. [自定义某个API的headers](#自定义某个api的headers)
     1. [指定某个action的请求头](#指定某个action的请求头)
+    1. [指定某个api的缓存](#指定某个api的缓存)
 1. [构建项目](#构建项目)
 1. [测试](#测试)
 
@@ -383,7 +384,7 @@ $resource.$http(config);
     - interceptor
     - timeout(尚未实现)
     - eventHandlers
-    - cache(尚未实现)
+    - cache
     - responseType
 - return
     - response.resource
@@ -407,7 +408,7 @@ userApi.get({user:'testUser'}).$promise
 
 - $$XHR：XMLHttpRequest
 - config
-    - cache:boolean,是否缓存
+    - cache:boolean|number,是否缓存，为数字时，表示缓存次数
     - data:any,requestBody的数据
     - headers:object，请求头
     - method:string，请求方法
@@ -505,6 +506,20 @@ getUser.info({uid:'1'}).$promise
     },function(error){
       console.error(error);
     });
+```
+
+#### 指定某个api的缓存
+
+```javascript
+// 设置缓存次10次
+var getUser = $resource.register('userApi','/user/:uid',{uid:'@uid'},{},{
+  cache:10
+});
+
+// 10次之后的请求，都会被缓存，直到超过缓存次数
+getUser.get().$promise
+getUser.post().$promise
+getUser.put().$promise
 ```
 
 ### 构建项目
