@@ -77,7 +77,7 @@ class $resource {
        * @returns {*}       $resource
        */
       Http.prototype[action] = function (realParams = {}, config = {}) {
-        let _url = $resource.parseParams(CONFIG.hosts + object.url, realParams);
+        let body = $resource.parseParams(CONFIG.hosts + object.url, realParams);
         let _config = $utils.merge({
             headers,
             withCredentials,
@@ -98,7 +98,7 @@ class $resource {
          *  3: 配置项
          *  4: 临时配置项，比如只配置此次调用
          */
-        return $http[object.method.toLowerCase()](_url, realParams, _config);
+        return $http[object.method.toLowerCase()](body, realParams, _config);
       };
 
     });
@@ -173,35 +173,21 @@ class $resource {
   static parseParams(url, params = {}) {
     if (!$utils.isObject(params)) return url;
 
-    /**
-     * 把参数对应填到url的  :xxx  上
-     * 例如：
-     * url    /:path/:file.json
-     * params {path:'demo',file:'test'}
-     *
-     * 生成    /demo/test.json
-     */
+    let urlParts = url.split('?');
+    let [body='',query=''] = [urlParts[0], urlParts[1]];
+
+    // 处理body
     $utils.forEach(params, function (value, key) {
-      url = url.replace(new RegExp(':' + key, 'g'), value);
+      value = $utils.isFunction(value) ? value() : value;
+      body = body.replace(new RegExp(':' + key, 'g'), value);
     });
 
+    // 把body中，未匹配的通配符去掉
+    body = body.replace(/\:[a-z_\$][\w\$]*/ig, '');
 
-    /**
-     * 如果还有未传入的参数，但是url上面却有通配符
-     * 例如：
-     * url    /:path/:file.json?:user&pwd=:pwd
-     *
-     * params {file:'test'}
-     *
-     * url需要4个字段填充，但是params只传入一个
-     * 以下进行处理
-     */
 
-    let urlParts = url.split('?');
-    let [_url='',queryString=''] = [urlParts[0], urlParts[1]];
-
-    // 处理查询字符串
-    if (queryString && /\:[^\&]+/.test(queryString)) {
+    // 处理query
+    if (query) {
       let queryArr = [];
 
       /**
@@ -209,40 +195,40 @@ class $resource {
        * 以 & 切割查询字符串
        * [':user','pwd=:pwd']
        */
-      queryString.split('&').forEach((group)=> {
+      query.split('&').forEach((group)=> {
         let _match = group.split('=');
-        let [key='',value=''] = [_match[0], _match[1]];
-        /**
-         * 如果不存在value值， :user
-         */
+        let key = _match[0] || '';
+        let value = _match[1] || '';
+
         if (!value) {
-          // 如果key值是通配符 :user
-          if (/^\s*\:([\w]+)/i.test(key)) {
-            // 拼接成  user=
-            key = key.replace(/^\s*\:([\w]+)/i, '$1');
+          if (/^\:/.test(key)) {
+            key = key.replace(/^\:/, '');
+            value = params[key] || '';
           }
-          queryArr.push(key + '=');
         }
-        // 如果存在value值，  pwd=:pwd
         else {
-          // 拼接成  pwd=:pwd
-          queryArr.push(key + '=' + value);
+          key = /^\:/.test(key) ? key.replace(/^\:/, '') : key;
+          if (/^\:/.test(value)) {
+            let _value = value.replace(/^\:/, '');
+            let paramsVal = params[_value];
+            paramsVal = $utils.isFunction(paramsVal) ? paramsVal() : paramsVal;
+            value = paramsVal === undefined ||
+            paramsVal === null ||
+            $utils.isNumber(paramsVal) && isNaN(paramsVal) ? '' : paramsVal;
+          }
         }
+        queryArr.push(key + '=' + value);
       });
 
-      if (queryArr.length) {
-        url = _url + '?' + queryArr.join('&');
-      }
+      query = queryArr.length ? queryArr.join('&') : '';
+
+      // 把query中，未匹配的统配符，转换成  xxx=
+      query = query.replace(/\:([^\&\=]+)/ig, '$1');
 
     }
 
-    /**
-     * 把未传入的通配符清空
-     * :path        >>> ''
-     * pwd=:pwd     >>> pwd=''
-     */
-
-    url = url.replace(/\:[a-z_\$][\w\$]*/ig, '');
+    // 拼接url
+    url = query ? body + '?' + query : body;
 
     return url;
   };

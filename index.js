@@ -2,50 +2,52 @@ let $http = require('./src/$http');
 
 let $resource = require('./src/$resource');
 
-let g = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this;
+let GLOBAL = require('./src/global');
 
-if (g.angular) {
-  g.angular.module('$resource', [])
+if (GLOBAL.angular) {
+  GLOBAL.angular.module('$resource', [])
     .provider('$resource', function () {
 
-      this.setResponseType = (value)=> {
+      let $resourceProvider = this;
+
+      $resourceProvider.setResponseType = (value)=> {
         $resource.responseType = value;
-        return this;
+        return $resourceProvider;
       };
 
-      this.setHeaders = (value)=> {
+      $resourceProvider.setHeaders = (value)=> {
         $resource.headers = value;
-        return this
+        return $resourceProvider
       };
 
-      this.setWithCredentials = (value)=> {
+      $resourceProvider.setWithCredentials = (value)=> {
         $resource.withCredentials = value;
-        return this;
+        return $resourceProvider;
       };
 
-      this.setHosts = (value)=> {
+      $resourceProvider.setHosts = (value)=> {
         $resource.hosts = value;
-        return this;
+        return $resourceProvider;
       };
 
-      this.setInterceptor = (func)=> {
+      $resourceProvider.setInterceptor = (func)=> {
         $resource.interceptor = func;
-        return this;
+        return $resourceProvider;
       };
 
-      this.setTransformHeaders = function (func) {
+      $resourceProvider.setTransformHeaders = function (func) {
         $resource.transformHeaders.push(func);
-        return this;
+        return $resourceProvider;
       };
 
-      this.$get = function () {
+      $resourceProvider.$get = function () {
         return $resource;
       }
     });
-} else if (g.$ && g.jQuery) {
-  g.$.fn = $resource;
+} else if (GLOBAL.$ && GLOBAL.jQuery) {
+  GLOBAL.$.fn = $resource;
 } else {
-  window.$resource = $resource;
+  GLOBAL.$resource = $resource;
 }
 
 module.exports = $resource;

@@ -6,6 +6,7 @@ let $utils = require('./$utils');
 let $q = require('q');
 let $resource = require('./$resource');
 let $common = require('./$common');
+let GLOBAL = require('./global');
 
 // 默认的配置
 let config = {
@@ -45,9 +46,9 @@ let $http = function ({
 
   let deferred = $q.defer();
 
-  let XHR = window.XMLHttpRequest ? new XMLHttpRequest() :
-    window.XDomainRequest ? new XDomainRequest() :
-      window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") :
+  let XHR = GLOBAL.XMLHttpRequest ? new XMLHttpRequest() :
+    GLOBAL.XDomainRequest ? new XDomainRequest() :
+      GLOBAL.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") :
         null;
 
   if (!XHR) {

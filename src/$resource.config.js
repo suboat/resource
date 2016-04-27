@@ -2,8 +2,16 @@
  * Created by axetroy on 16-4-24.
  */
 
+let GLOBAL = require('./global');
+
 let CONFIG = {
-  hosts: window.location.origin || window.location.host || '',
+  hosts: ((g)=> {
+    if (!g.location) {
+      return '';
+    } else {
+      return g.location.origin || g.location.host || '';
+    }
+  })(GLOBAL),
   withCredentials: false,
   responseType: '',
   headers: {
