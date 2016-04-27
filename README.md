@@ -26,6 +26,7 @@
     1. [自定义某个API的headers](#自定义某个api的headers)
     1. [指定某个action的请求头](#指定某个action的请求头)
 1. [构建项目](#构建项目)
+1. [测试](#测试)
 
 ## 使用方法
 
@@ -513,4 +514,10 @@ git clone https://github.com/suboat/resource.git
 cd resource
 npm install
 npm run build
+```
+
+### 测试
+
+```bash
+npm test
 ```
