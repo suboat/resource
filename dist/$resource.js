@@ -1,6 +1,6 @@
 
       /*
-      2016-04-27T11:37:59.206Z
+      2016-04-27T11:42:05.465Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -56,60 +56,60 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
+	'use strict';
 
 	var $http = __webpack_require__(2);
 
 	var $resource = __webpack_require__(43);
 
-	var g = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : undefined;
+	var GLOBAL = __webpack_require__(46);
 
-	if (g.angular) {
-	  g.angular.module('$resource', []).provider('$resource', function () {
-	    var _this = this;
+	if (GLOBAL.angular) {
+	  GLOBAL.angular.module('$resource', []).provider('$resource', function () {
 
-	    this.setResponseType = function (value) {
+	    var $resourceProvider = this;
+
+	    $resourceProvider.setResponseType = function (value) {
 	      $resource.responseType = value;
-	      return _this;
+	      return $resourceProvider;
 	    };
 
-	    this.setHeaders = function (value) {
+	    $resourceProvider.setHeaders = function (value) {
 	      $resource.headers = value;
-	      return _this;
+	      return $resourceProvider;
 	    };
 
-	    this.setWithCredentials = function (value) {
+	    $resourceProvider.setWithCredentials = function (value) {
 	      $resource.withCredentials = value;
-	      return _this;
+	      return $resourceProvider;
 	    };
 
-	    this.setHosts = function (value) {
+	    $resourceProvider.setHosts = function (value) {
 	      $resource.hosts = value;
-	      return _this;
+	      return $resourceProvider;
 	    };
 
-	    this.setInterceptor = function (func) {
+	    $resourceProvider.setInterceptor = function (func) {
 	      $resource.interceptor = func;
-	      return _this;
+	      return $resourceProvider;
 	    };
 
-	    this.setTransformHeaders = function (func) {
+	    $resourceProvider.setTransformHeaders = function (func) {
 	      $resource.transformHeaders.push(func);
-	      return this;
+	      return $resourceProvider;
 	    };
 
-	    this.$get = function () {
+	    $resourceProvider.$get = function () {
 	      return $resource;
 	    };
 	  });
-	} else if (g.$ && g.jQuery) {
-	  g.$.fn = $resource;
+	} else if (GLOBAL.$ && GLOBAL.jQuery) {
+	  GLOBAL.$.fn = $resource;
 	} else {
-	  window.$resource = $resource;
+	  GLOBAL.$resource = $resource;
 	}
 
 	module.exports = $resource;
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
 /* 2 */
@@ -124,6 +124,8 @@
 	var $utils = __webpack_require__(3);
 	var $q = __webpack_require__(40);
 	var $resource = __webpack_require__(43);
+	var $common = __webpack_require__(44);
+	var GLOBAL = __webpack_require__(46);
 
 	// 默认的配置
 	var config = {
@@ -173,7 +175,7 @@
 
 	  var deferred = $q.defer();
 
-	  var XHR = window.XMLHttpRequest ? new XMLHttpRequest() : window.XDomainRequest ? new XDomainRequest() : window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : null;
+	  var XHR = GLOBAL.XMLHttpRequest ? new XMLHttpRequest() : GLOBAL.XDomainRequest ? new XDomainRequest() : GLOBAL.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : null;
 
 	  if (!XHR) {
 	    console.error('your browser is not support XMLHttpRequest');
@@ -198,7 +200,7 @@
 	    }
 	  };
 
-	  XHR.onreadystatechange = function (event) {
+	  XHR.onreadystatechange = function () {
 	    if (XHR.readyState !== 4) return;
 
 	    XHR.warpper = XHRWrapper(XHR);
@@ -206,27 +208,7 @@
 	    if (/^(2|3)/.test(XHR.status)) {
 	      // 经过拦截器筛选
 	      var inter = interceptor(XHR.warpper, $q);
-	      (function (inter) {
-	        var deferred = $q.defer();
-
-	        // false || null || undefined
-	        if (!inter) {
-	          deferred.reject(XHR.warpper);
-	        }
-	        // boolean=true
-	        else if ($utils.isBoolean(inter)) {
-	            deferred.resolve(XHR.warpper);
-	          }
-	          // promise
-	          else if ($utils.isObject(inter) && $utils.isFunction(inter.then)) {
-	              return inter;
-	            }
-	            // others
-	            else {
-	                deferred.reject(inter);
-	              }
-	        return deferred.promise;
-	      })(inter).then(function (response) {
+	      $common.returnValueHandler(inter, XHR.warpper).then(function (response) {
 	        XHR.warpper.resource.$resolve = true;
 	        deferred.resolve(response || XHR.warpper);
 	      }, function (response) {
@@ -249,12 +231,16 @@
 	    onabort: errorFunc
 	  }, eventHandlers);
 
-	  $utils.forEach(ErrorHandler, function (handler, eventName) {
+	  $utils.forEach(ErrorHandler, function () {
+	    var handler = arguments.length <= 0 || arguments[0] === undefined ? $utils.noop : arguments[0];
+	    var eventName = arguments[1];
+
 	    XHR[eventName] = function (event) {
 	      XHR.warpper = XHRWrapper(XHR);
-	      if ($utils.isFunction(handler)) {
-	        handler(event, XHR.warpper);
-	      } else {
+	      $utils.isFunction(handler) && handler(event, XHR.warpper);
+
+	      if (/(ontimeout|onerror|onabort)/i.test(eventName)) {
+	        XHR.warpper.resource.$resolve = false;
 	        deferred.reject(XHR.warpper);
 	      }
 	    };
@@ -262,10 +248,10 @@
 
 	  XHR.open(method, url, true);
 
-	  // 设置头部信息，必须在链接服务器之后
-	  XHR.$$requestHeader = $utils.merge(config.headers, headers && $utils.isObject(headers) ? headers : {});
+	  // 设置头部信息，必须在open服务器之后
+	  XHR.$$requestHeader = $utils.merge(config.headers, headers);
 	  $utils.forEach(XHR.$$requestHeader, function (value, key) {
-	    XHR.setRequestHeader(key, value);
+	    return XHR.setRequestHeader(key, value);
 	  });
 
 	  /*
@@ -306,22 +292,22 @@
 	    var respHeaders = XHR.getAllResponseHeaders();
 	    // response header按换行符分割
 	    respHeaders.split(/\n/g).forEach(function (str) {
-	      var match = str.split(':');
-	      if (!match || match === str) return;
-	      var key = match[0];
-	      var value = match.slice(1).join(':');
-	      if (!key || !value) return;
-	      _headers[key.trim().toLocaleLowerCase()] = value.trim();
+	      var match = str.split(':'),
+	          key = void 0,
+	          value = void 0;
+	      if (!match || !match.length || !match[0]) return;
+	      key = match[0];
+	      value = match.length <= 1 ? '' : match.slice(1).join(':');
+	      _headers[key.trim().toLowerCase()] = value.trim();
 	    });
 	    return _headers;
 	  }();
 
 	  // response data
-	  var _jsonReg = /\/json/i;
-	  var data = _jsonReg.test(headers['content-type']) ? $utils.fromJson(XHR.response) : XHR.response;
+	  var data = /\/json/i.test(headers['content-type']) ? $utils.fromJson(XHR.response) : XHR.response;
 
 	  // the resource
-	  var resource = $utils.extend(XHR.warpper.resource, { $resolve: false }, data || {});
+	  var resource = $utils.extend(XHR.warpper.resource, data || {});
 
 	  return { $$XHR: XHR, config: config, data: data, headers: headers, resource: resource, status: XHR.status, statusText: XHR.statusText };
 	};
@@ -3415,7 +3401,7 @@
 	        var realParams = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	        var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-	        var _url = $resource.parseParams(CONFIG.hosts + object.url, realParams);
+	        var body = $resource.parseParams(CONFIG.hosts + object.url, realParams);
 	        var _config = $utils.merge({
 	          headers: headers,
 	          withCredentials: withCredentials,
@@ -3436,7 +3422,7 @@
 	         *  3: 配置项
 	         *  4: 临时配置项，比如只配置此次调用
 	         */
-	        return $http[object.method.toLowerCase()](_url, realParams, _config);
+	        return $http[object.method.toLowerCase()](body, realParams, _config);
 	      };
 	    });
 
@@ -3458,40 +3444,24 @@
 
 	      if (!$utils.isObject(params)) return url;
 
-	      /**
-	       * 把参数对应填到url的  :xxx  上
-	       * 例如：
-	       * url    /:path/:file.json
-	       * params {path:'demo',file:'test'}
-	       *
-	       * 生成    /demo/test.json
-	       */
-	      $utils.forEach(params, function (value, key) {
-	        url = url.replace(new RegExp(':' + key, 'g'), value);
-	      });
-
-	      /**
-	       * 如果还有未传入的参数，但是url上面却有通配符
-	       * 例如：
-	       * url    /:path/:file.json?:user&pwd=:pwd
-	       *
-	       * params {file:'test'}
-	       *
-	       * url需要4个字段填充，但是params只传入一个
-	       * 以下进行处理
-	       */
-
 	      var urlParts = url.split('?');
 	      var _urlParts$ = urlParts[0];
-
-	      var _url = _urlParts$ === undefined ? '' : _urlParts$;
-
+	      var body = _urlParts$ === undefined ? '' : _urlParts$;
 	      var _urlParts$2 = urlParts[1];
-	      var queryString = _urlParts$2 === undefined ? '' : _urlParts$2;
+	      var query = _urlParts$2 === undefined ? '' : _urlParts$2;
 
-	      // 处理查询字符串
+	      // 处理body
 
-	      if (queryString && /\:[^\&]+/.test(queryString)) {
+	      $utils.forEach(params, function (value, key) {
+	        value = $utils.isFunction(value) ? value() : value;
+	        body = body.replace(new RegExp(':' + key, 'g'), value);
+	      });
+
+	      // 把body中，未匹配的通配符去掉
+	      body = body.replace(/\:[a-z_\$][\w\$]*/ig, '');
+
+	      // 处理query
+	      if (query) {
 	        (function () {
 	          var queryArr = [];
 
@@ -3500,45 +3470,37 @@
 	           * 以 & 切割查询字符串
 	           * [':user','pwd=:pwd']
 	           */
-	          queryString.split('&').forEach(function (group) {
+	          query.split('&').forEach(function (group) {
 	            var _match = group.split('=');
-	            console.log(_match);
-	            var _match$ = _match[0];
-	            var key = _match$ === undefined ? '' : _match$;
-	            var _match$2 = _match[1];
-	            var value = _match$2 === undefined ? '' : _match$2;
-	            /**
-	             * 如果不存在value值， :user
-	             */
+	            var key = _match[0] || '';
+	            var value = _match[1] || '';
 
 	            if (!value) {
-	              // 如果key值是通配符 :user
-	              if (/^\s*\:([\w]+)/i.test(key)) {
-	                // 拼接成  user=
-	                key = key.replace(/^\s*\:([\w]+)/i, '$1');
+	              if (/^\:/.test(key)) {
+	                key = key.replace(/^\:/, '');
+	                value = params[key] || '';
 	              }
-	              queryArr.push(key + '=');
+	            } else {
+	              key = /^\:/.test(key) ? key.replace(/^\:/, '') : key;
+	              if (/^\:/.test(value)) {
+	                var _value = value.replace(/^\:/, '');
+	                var paramsVal = params[_value];
+	                paramsVal = $utils.isFunction(paramsVal) ? paramsVal() : paramsVal;
+	                value = paramsVal === undefined || paramsVal === null || $utils.isNumber(paramsVal) && isNaN(paramsVal) ? '' : paramsVal;
+	              }
 	            }
-	            // 如果存在value值，  pwd=:pwd
-	            else {
-	                // 拼接成  pwd=:pwd
-	                queryArr.push(key + '=' + value);
-	              }
+	            queryArr.push(key + '=' + value);
 	          });
 
-	          if (queryArr.length) {
-	            url = _url + '?' + queryArr.join('&');
-	          }
+	          query = queryArr.length ? queryArr.join('&') : '';
+
+	          // 把query中，未匹配的统配符，转换成  xxx=
+	          query = query.replace(/\:([^\&\=]+)/ig, '$1');
 	        })();
 	      }
 
-	      /**
-	       * 把未传入的通配符清空
-	       * :path        >>> ''
-	       * pwd=:pwd     >>> pwd=''
-	       */
-
-	      url = url.replace(/\:[a-z_\$][\w\$]*/ig, '');
+	      // 拼接url
+	      url = query ? body + '?' + query : body;
 
 	      return url;
 	    }
@@ -3569,7 +3531,10 @@
 	      var actions = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
 	      var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
 
-	      if ($resource.q[id]) console.warn('API ' + id + ' can\'t be register twice');
+	      if ($resource.q[id]) {
+	        console.warn('API ' + id + ' can\'t be register twice');
+	        id += Math.random().toFixed(6);
+	      }
 	      var api = new $resource(url, params, actions, options);
 	      $resource.q[id] = api;
 	      return api;
@@ -3717,6 +3682,39 @@
 	      }
 	    }
 	  }, {
+	    key: 'returnValueHandler',
+
+
+	    /**
+	     * 处理函数的返回值
+	     * @param value
+	     * @param defaultReturnVal
+	     * @returns {promise}
+	     */
+	    value: function returnValueHandler(value, defaultReturnVal) {
+	      var deferred = $q.defer();
+	      var val = value;
+
+
+	      if ($utils.isFunction(value)) val = value();
+
+	      // false || undefined || null || NaN
+	      if (!val) {
+	        deferred.reject(defaultReturnVal);
+	      }
+	      // true
+	      else if ($utils.isBoolean(val)) {
+	          deferred.resolve(defaultReturnVal);
+	        }
+	        // promise
+	        else if ($utils.isObject(val) && $utils.isFunction(val.then)) {
+	            return val;
+	          } else {
+	            deferred.reject(value);
+	          }
+	      return deferred.promise;
+	    }
+	  }, {
 	    key: 'defaultActions',
 	    get: function get() {
 	      return {
@@ -3760,7 +3758,7 @@
 
 /***/ },
 /* 45 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -3768,8 +3766,16 @@
 	 * Created by axetroy on 16-4-24.
 	 */
 
+	var GLOBAL = __webpack_require__(46);
+
 	var CONFIG = {
-	  hosts: window.location.origin || window.location.host || '',
+	  hosts: function (g) {
+	    if (!g.location) {
+	      return '';
+	    } else {
+	      return g.location.origin || g.location.host || '';
+	    }
+	  }(GLOBAL),
 	  withCredentials: false,
 	  responseType: '',
 	  headers: {
@@ -3801,6 +3807,21 @@
 	};
 
 	module.exports = CONFIG;
+
+/***/ },
+/* 46 */
+/***/ function(module, exports) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
+
+	/**
+	 * Created by axetroy on 16-4-27.
+	 */
+
+	var GLOBAL = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : undefined;
+
+	module.exports = GLOBAL;
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }
 /******/ ]);
