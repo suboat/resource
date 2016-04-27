@@ -1,6 +1,6 @@
 
       /*
-      2016-04-26T13:13:22.079Z
+      2016-04-27T06:28:23.724Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -643,7 +643,7 @@
 /* 7 */
 /***/ function(module, exports) {
 
-	var core = module.exports = {version: '2.3.0'};
+	var core = module.exports = {version: '2.2.2'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
@@ -3428,7 +3428,7 @@
 	          headers: $utils.merge(headers, options.headers, config.headers)
 	        });
 	        // 转换请求头
-	        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
+	        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), _config.headers);
 	        /**
 	         * 发送http请求
 	         * arguments:
