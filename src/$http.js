@@ -7,6 +7,7 @@ let $q = require('q');
 let $resource = require('./$resource');
 let $common = require('./$common');
 let GLOBAL = require('./global');
+let $cache = require('./$cache');
 
 // 默认的配置
 let config = {
@@ -44,7 +45,18 @@ let $http = function ({
 
   if (!url || !method) return $q.reject();
 
+
   let deferred = $q.defer();
+
+  let _cache = $cache.get(url + '-' + method);
+  if (_cache) {
+    let _XHRWrapper = _cache;
+    if (_cache) {
+      _XHRWrapper.resource.$promise = deferred.promise;
+      _XHRWrapper.resource.$resolve ? deferred.resolve(_XHRWrapper) : deferred.reject(_XHRWrapper);
+      return _XHRWrapper.resource;
+    }
+  }
 
   let XHR = GLOBAL.XMLHttpRequest ? new XMLHttpRequest() :
     GLOBAL.XDomainRequest ? new XDomainRequest() :
@@ -53,7 +65,8 @@ let $http = function ({
 
   if (!XHR) {
     console.error('your browser is not support XMLHttpRequest');
-    return $q.reject();
+    deferred.reject();
+    return {$promise: deferred.promise, $resolve: false};
   }
 
   // CROS
@@ -85,9 +98,11 @@ let $http = function ({
       $common.returnValueHandler(inter, XHR.warpper)
         .then((response)=> {
           XHR.warpper.resource.$resolve = true;
+          cache && $cache.set(url + '-' + method, XHR.warpper, cache);
           deferred.resolve(response || XHR.warpper);
         }, (response)=> {
           XHR.warpper.resource.$resolve = false;
+          cache && $cache.set(url + '-' + method, XHR.warpper, cache);
           deferred.reject(response || XHR.warpper);
         });
     } else {
@@ -111,9 +126,9 @@ let $http = function ({
 
       if (/(ontimeout|onerror|onabort)/i.test(eventName)) {
         XHR.warpper.resource.$resolve = false;
+        cache && $cache.set(url + '-' + method, XHR.warpper, cache);
         deferred.reject(XHR.warpper);
       }
-
     }
   });
 

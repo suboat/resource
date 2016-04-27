@@ -15,7 +15,7 @@ class $resource {
     // default actions
     actions = $utils.merge($common.defaultActions, actions);
     // default options
-    options = $utils.merge($common.defaultOptions, options);
+    options = $utils.merge($common.defaultOptions, {cache: CONFIG.cache}, options);
 
     $utils.forEach(actions, (action)=> {
       action.url = url;
@@ -157,7 +157,11 @@ class $resource {
 
   static get hosts() {
     return CONFIG.hosts;
-  };
+  }
+
+  static set cache(boolean) {
+    CONFIG.cache = boolean;
+  }
 
   // 转换请求头
   static get transformHeaders() {

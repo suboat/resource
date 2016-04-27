@@ -13,6 +13,7 @@ let CONFIG = {
     }
   })(GLOBAL),
   withCredentials: false,
+  cache: false,
   responseType: '',
   headers: {
     Accept: 'application/json, text/plain, text/html, */*'
