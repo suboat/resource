@@ -126,6 +126,7 @@
 	var $resource = __webpack_require__(43);
 	var $common = __webpack_require__(44);
 	var GLOBAL = __webpack_require__(46);
+	var $cache = __webpack_require__(47);
 
 	// 默认的配置
 	var config = {
@@ -175,11 +176,22 @@
 
 	  var deferred = $q.defer();
 
+	  var _cache = $cache.get(url + '-' + method);
+	  if (_cache) {
+	    var _XHRWrapper = _cache;
+	    if (_cache) {
+	      _XHRWrapper.resource.$promise = deferred.promise;
+	      _XHRWrapper.resource.$resolve ? deferred.resolve(_XHRWrapper) : deferred.reject(_XHRWrapper);
+	      return _XHRWrapper.resource;
+	    }
+	  }
+
 	  var XHR = GLOBAL.XMLHttpRequest ? new XMLHttpRequest() : GLOBAL.XDomainRequest ? new XDomainRequest() : GLOBAL.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : null;
 
 	  if (!XHR) {
 	    console.error('your browser is not support XMLHttpRequest');
-	    return $q.reject();
+	    deferred.reject();
+	    return { $promise: deferred.promise, $resolve: false };
 	  }
 
 	  // CROS
@@ -210,9 +222,11 @@
 	      var inter = interceptor(XHR.warpper, $q);
 	      $common.returnValueHandler(inter, XHR.warpper).then(function (response) {
 	        XHR.warpper.resource.$resolve = true;
+	        cache && $cache.set(url + '-' + method, XHR.warpper, cache);
 	        deferred.resolve(response || XHR.warpper);
 	      }, function (response) {
 	        XHR.warpper.resource.$resolve = false;
+	        cache && $cache.set(url + '-' + method, XHR.warpper, cache);
 	        deferred.reject(response || XHR.warpper);
 	      });
 	    } else {
@@ -241,6 +255,7 @@
 
 	      if (/(ontimeout|onerror|onabort)/i.test(eventName)) {
 	        XHR.warpper.resource.$resolve = false;
+	        cache && $cache.set(url + '-' + method, XHR.warpper, cache);
 	        deferred.reject(XHR.warpper);
 	      }
 	    };
@@ -3335,7 +3350,7 @@
 	    // default actions
 	    actions = $utils.merge($common.defaultActions, actions);
 	    // default options
-	    options = $utils.merge($common.defaultOptions, options);
+	    options = $utils.merge($common.defaultOptions, { cache: CONFIG.cache }, options);
 
 	    $utils.forEach(actions, function (action) {
 	      action.url = url;
@@ -3607,10 +3622,15 @@
 	      return CONFIG.hosts;
 	    }
 	  }, {
-	    key: 'transformHeaders',
-
+	    key: 'cache',
+	    set: function set(boolean) {
+	      CONFIG.cache = boolean;
+	    }
 
 	    // 转换请求头
+
+	  }, {
+	    key: 'transformHeaders',
 	    get: function get() {
 	      return CONFIG.transformHeaders;
 	    }
@@ -3777,6 +3797,7 @@
 	    }
 	  }(GLOBAL),
 	  withCredentials: false,
+	  cache: false,
 	  responseType: '',
 	  headers: {
 	    Accept: 'application/json, text/plain, text/html, */*'
@@ -3822,6 +3843,60 @@
 
 	module.exports = GLOBAL;
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 47 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	/**
+	 * Created by axetroy on 16-4-27.
+	 */
+
+	var $$cache = {};
+
+	var $cache = {};
+
+	$cache.get = function (key) {
+
+	  if (!key || !$$cache[key]) return null;
+
+	  var _cache = $$cache[key];
+
+	  // 不存在
+	  if (!_cache) return null;
+
+	  // times设置为boolean
+	  if (typeof _cache.times === 'boolean') {
+	    return !!_cache.times ? _cache.value : null;
+	  }
+
+	  // 过期
+	  if (_cache.used >= _cache.times) {
+	    delete $$cache[key];
+	    return null;
+	  }
+
+	  _cache.used++;
+
+	  return _cache.value;
+	};
+
+	$cache.set = function (key, value, times) {
+	  return $$cache[key] = {
+	    key: key,
+	    times: times,
+	    value: value,
+	    used: 0
+	  };
+	};
+
+	$cache.remove = function (key) {
+	  delete $$cache[key];
+	};
+
+	module.exports = $cache;
 
 /***/ }
 /******/ ]);

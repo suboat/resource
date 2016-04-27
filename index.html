@@ -19,13 +19,13 @@
     return true;
   };
 
+  $resource.cache = false;
+
   // id url param actions options
   var getFile = $resource.register('id', '/:path/:file.json?hello=:hello&:user&pwd=:pwd', {
     pwd: '@password',
     test: '@test'
-  });
-
-  console.log(getFile);
+  }, {});
 
   getFile.get({dist: 'demo', file: 'test', hello: 'world', password: '123123'}, {
     headers: {
@@ -38,6 +38,21 @@
     }, function (error) {
       console.error(error);
     });
+
+  window.setTimeout(function () {
+    getFile.get({dist: 'demo', file: 'test', hello: 'world', password: '123123'}, {
+      headers: {
+        auth: true
+      }
+    }).$promise
+      .then(function (resp) {
+        console.info(resp);
+        console.log(123, JSON.stringify(resp));
+      }, function (error) {
+        console.error(error);
+      });
+  }, 2000);
+
 
 </script>
 
