@@ -3,7 +3,7 @@
  */
 
 let $utils = require('./$utils');
-let CONFIG = require('./$resource.config');
+let $q = require('q');
 
 class $common {
   constructor() {
@@ -42,10 +42,6 @@ class $common {
       timeout: null
     };
   };
-
-  static transformHeaders(headers) {
-    return JSON.stringify(headers);
-  }
 
   /**
    * 过滤器 | 变形器，用于数据的变形

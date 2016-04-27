@@ -17,11 +17,8 @@ class $resource {
     // default options
     options = $utils.merge($common.defaultOptions, options);
 
-    // actions.uid = Math.random();
-
     $utils.forEach(actions, (action)=> {
       action.url = url;
-      // $utils.extend(action, {url});
 
       let query = [];
       $utils.forEach(registerParams, (value, key)=> {
@@ -35,7 +32,6 @@ class $resource {
           } else {
             action.url = action.url.replace(inlineReg, value);
           }
-          // action.url = bindReg.test(value) ? action.url.replace(inlineReg, ':' + value.replace(bindReg, '')) : action.url.replace(inlineReg, value);
         } else {
           // 以@开头 例如 '@limit'
           if (bindReg.test(value)) {
@@ -43,7 +39,6 @@ class $resource {
           } else {
             query.push(key + '=' + value);
           }
-          // bindReg.test(value) ? query.push(key + '=' + ':' + value.replace(bindReg, '')) : query.push(key + '=' + value);
         }
       });
 
@@ -53,6 +48,7 @@ class $resource {
       }
 
     });
+
     class Http {
       constructor() {
         this.url = url;
@@ -67,10 +63,13 @@ class $resource {
     $utils.forEach(actions, (object, action) => {
 
       // 设置header和拦截器和跨域请求
-      let headers = object.headers || CONFIG.headers;
-      let interceptor = object.interceptor || CONFIG.interceptor;
-      let responseType = object.responseType || CONFIG.responseType;
-      let withCredentials = object.withCredentials !== undefined ? !!object.withCredentials : CONFIG.withCredentials;
+      let {
+        headers=CONFIG.headers,
+        interceptor=CONFIG.interceptor,
+        responseType = CONFIG.responseType,
+        withCredentials=CONFIG.withCredentials
+      } = object;
+
       /**
        * 实例化之后，真正调用的函数
        * @param realParams      解析url的参数，如果为post，put等，则会放进requestBody
@@ -90,7 +89,7 @@ class $resource {
             headers: $utils.merge(headers, options.headers, config.headers)
           });
         // 转换请求头
-        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), headers);
+        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), _config.headers);
         /**
          * 发送http请求
          * arguments:
@@ -198,45 +197,44 @@ class $resource {
      * 以下进行处理
      */
 
-    let urlParts = url.split('?');        // 切割url
-    let _url = urlParts[0];               // /:path/:file.json
-    let queryString = urlParts[1];        // :user&pwd=:pwd
+    let urlParts = url.split('?');
+    let [_url='',queryString=''] = [urlParts[0], urlParts[1]];
 
     // 处理查询字符串
     if (queryString && /\:[^\&]+/.test(queryString)) {
       let queryArr = [];
 
-      // 替换查询字符串的通配符
-      if (/\:([a-z_\$][\w\$]*)/.test(queryString)) {
-
+      /**
+       * 替换查询字符串的通配符
+       * 以 & 切割查询字符串
+       * [':user','pwd=:pwd']
+       */
+      queryString.split('&').forEach((group)=> {
+        let _match = group.split('=');
+        console.log(_match);
+        let [key='',value=''] = [_match[0], _match[1]];
         /**
-         * 以 & 切割查询字符串
-         * [':user','pwd=:pwd']
+         * 如果不存在value值， :user
          */
-        queryString.split('&').forEach((group)=> {
-          let _match = group.split('=');
-          let key = _match[0];                      // 查询字符串的key
-          let value = _match[1];                    // 查询字符串的value
-          /**
-           * 如果不存在value值， :user
-           */
-          if (!value) {
-            // 如果key值是通配符 :user
-            if (/^\s*\:([\w]+)/i.test(key)) {
-              // 拼接成  user=
-              key = key.replace(/^\s*\:([\w]+)/i, '$1');
-            }
-            queryArr.push(key + '=');
+        if (!value) {
+          // 如果key值是通配符 :user
+          if (/^\s*\:([\w]+)/i.test(key)) {
+            // 拼接成  user=
+            key = key.replace(/^\s*\:([\w]+)/i, '$1');
           }
-          // 如果存在value值，  pwd=:pwd
-          else {
-            // 拼接成  pwd=:pwd
-            queryArr.push(key + '=' + value);
-          }
-        });
+          queryArr.push(key + '=');
+        }
+        // 如果存在value值，  pwd=:pwd
+        else {
+          // 拼接成  pwd=:pwd
+          queryArr.push(key + '=' + value);
+        }
+      });
 
+      if (queryArr.length) {
+        url = _url + '?' + queryArr.join('&');
       }
-      url = _url + '?' + queryArr.join('&');
+
     }
 
     /**

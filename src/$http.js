@@ -61,9 +61,7 @@ let $http = function ({
   if (!!timeout) XHR.timeout = timeout;
 
   XHR.$$method = method;
-
   XHR.$$url = url;
-
   XHR.$$data = data;
   XHR.$$cache = cache;
 
