@@ -49,14 +49,15 @@ class $resource {
 
     });
 
+    let transformHeaders = $utils.isArray(options.transformHeaders) ? options.transformHeaders : [];
+
     class Http {
       constructor() {
         this.url = url;
         this.parmas = registerParams;
         this.actions = actions;
         this.options = options;
-        this.transformHeaders = $utils.isArray(options.transformHeaders) ?
-          options.transformHeaders : [];
+        this.transformHeaders = transformHeaders;
       };
     }
 
@@ -89,7 +90,7 @@ class $resource {
             headers: $utils.merge(headers, options.headers, config.headers)
           });
         // 转换请求头
-        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), _config.headers);
+        _config.headers = $common.transform(CONFIG.transformHeaders.concat(transformHeaders, config.transformHeaders || []), _config.headers);
         /**
          * 发送http请求
          * arguments:
@@ -189,7 +190,6 @@ class $resource {
     // 把body中，未匹配的通配符去掉
     body = body.replace(/\:[a-z_\$][\w\$]*/ig, '');
 
-
     // 处理query
     if (query) {
       let queryArr = [];
@@ -200,14 +200,15 @@ class $resource {
        * [':user','pwd=:pwd']
        */
       query.split('&').forEach((group)=> {
+        if (group === '') return;
         let _match = group.split('=');
         let key = _match[0] || '';
         let value = _match[1] || '';
-
         if (!value) {
           if (/^\:/.test(key)) {
             key = key.replace(/^\:/, '');
-            value = params[key] || '';
+            let _value = params[key];
+            value = _value === undefined || _value === null ? '' : _value;
           }
         }
         else {

@@ -93,7 +93,28 @@ let CASE = [
     url: '/:path/:file.:type?:username&:pwd&:age',
     params: {path: 'demo', type: 'html', file: 'test'},
     result: '/demo/test.html?username=&pwd=&age='
+  },
+  {
+    url: '/:path/:file.:type?:username',
+    params: {path: 'demo', type: 'html', file: 'test', username: 0},
+    result: '/demo/test.html?username=0'
+  },
+  {
+    url: '/:path/:file.:type?:username',
+    params: {path: 'demo', type: 'html', file: 'test', username: false},
+    result: '/demo/test.html?username=false'
+  },
+  {
+    url: '/:path/:file.:type?:username',
+    params: {path: 'demo', type: 'html', file: 'test', username: true},
+    result: '/demo/test.html?username=true'
+  },
+  {
+    url: '/:path/:file.:type?:username&age=:age',
+    params: {path: 'demo', type: 'html', file: 'test', age: 22},
+    result: '/demo/test.html?username=&age=22'
   }
+
 ];
 
 describe('url解析测试,详情看测试用例', function () {
