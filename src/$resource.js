@@ -22,23 +22,12 @@ class $resource {
 
       let query = [];
       $utils.forEach(registerParams, (value, key)=> {
-        // 匹配url地址上，是否出现  :xxx
-        let inlineReg = new RegExp(':' + key, 'g');
-        // 匹配params的value值，是否使用通配符绑定数值
-        let bindReg = /^\@/;
-        if (inlineReg.test(action.url)) {
-          if (bindReg.test(value)) {
-            action.url = action.url.replace(inlineReg, ':' + value.replace(bindReg, ''))
-          } else {
-            action.url = action.url.replace(inlineReg, value);
-          }
+        const INLINE_REG = new RegExp(':' + key, 'g');
+        value = value.indexOf('@') === 0 ? value.replace('@', '') : value;
+        if (INLINE_REG.test(action.url)) {
+          action.url = action.url.replace(INLINE_REG, value);
         } else {
-          // 以@开头 例如 '@limit'
-          if (bindReg.test(value)) {
-            query.push(key + '=' + ':' + value.replace(bindReg, ''))
-          } else {
-            query.push(key + '=' + value);
-          }
+          query.push(key + '=' + value);
         }
       });
 
