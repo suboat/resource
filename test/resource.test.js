@@ -4,9 +4,7 @@
 
 var expect = require('chai').expect;
 
-let $resource = require('../src/$resource');
-
-let parseParams = $resource.parseParams;
+let parseParams = require('../src/$resource').parseParams;
 
 let CASE = [
   {

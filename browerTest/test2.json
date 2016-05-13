@@ -1,0 +1,9 @@
+{
+  "name": "demo",
+  "age": 22,
+  "hello": false,
+  "test": [
+    "aaa",
+    "bbb"
+  ]
+}
