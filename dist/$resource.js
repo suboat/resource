@@ -1,6 +1,6 @@
 
       /*
-      2016-04-27T11:42:05.465Z
+      2016-05-13T16:30:51.475Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -642,7 +642,7 @@
 /* 7 */
 /***/ function(module, exports) {
 
-	var core = module.exports = {version: '2.3.0'};
+	var core = module.exports = {version: '2.4.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
@@ -3151,6 +3151,9 @@
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -3383,6 +3386,8 @@
 	      }
 	    });
 
+	    var transformHeaders = $utils.isArray(options.transformHeaders) ? options.transformHeaders : [];
+
 	    var Http = function Http() {
 	      _classCallCheck(this, Http);
 
@@ -3390,7 +3395,7 @@
 	      this.parmas = registerParams;
 	      this.actions = actions;
 	      this.options = options;
-	      this.transformHeaders = $utils.isArray(options.transformHeaders) ? options.transformHeaders : [];
+	      this.transformHeaders = transformHeaders;
 	    };
 
 	    $utils.forEach(actions, function (object, action) {
@@ -3428,7 +3433,7 @@
 	          headers: $utils.merge(headers, options.headers, config.headers)
 	        });
 	        // 转换请求头
-	        _config.headers = $common.transform(CONFIG.transformHeaders.concat(this.transformHeaders, config.transformHeaders || []), _config.headers);
+	        _config.headers = $common.transform(CONFIG.transformHeaders.concat(transformHeaders, config.transformHeaders || []), _config.headers);
 	        /**
 	         * 发送http请求
 	         * arguments:
@@ -3486,20 +3491,21 @@
 	           * [':user','pwd=:pwd']
 	           */
 	          query.split('&').forEach(function (group) {
+	            if (group === '') return;
 	            var _match = group.split('=');
 	            var key = _match[0] || '';
 	            var value = _match[1] || '';
-
 	            if (!value) {
 	              if (/^\:/.test(key)) {
 	                key = key.replace(/^\:/, '');
-	                value = params[key] || '';
+	                var _value = params[key];
+	                value = _value === undefined || _value === null ? '' : _value;
 	              }
 	            } else {
 	              key = /^\:/.test(key) ? key.replace(/^\:/, '') : key;
 	              if (/^\:/.test(value)) {
-	                var _value = value.replace(/^\:/, '');
-	                var paramsVal = params[_value];
+	                var _value2 = value.replace(/^\:/, '');
+	                var paramsVal = params[_value2];
 	                paramsVal = $utils.isFunction(paramsVal) ? paramsVal() : paramsVal;
 	                value = paramsVal === undefined || paramsVal === null || $utils.isNumber(paramsVal) && isNaN(paramsVal) ? '' : paramsVal;
 	              }
