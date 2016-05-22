@@ -170,11 +170,15 @@ class $resource {
     let urlParts = url.split('?');
     let [body='',query=''] = [urlParts[0], urlParts[1]];
 
-    // 处理body
-    $utils.forEach(params, function (value, key) {
-      value = $utils.isFunction(value) ? value() : value;
-      body = body.replace(new RegExp(':' + key, 'g'), value);
-    });
+    if ($utils.isArray(params)) {
+
+    } else if ($utils.isObject(params)) {
+      // 处理body
+      $utils.forEach(params, function (value, key) {
+        value = $utils.isFunction(value) ? value() : value;
+        body = body.replace(new RegExp(':' + key, 'g'), value);
+      });
+    }
 
     // 把body中，未匹配的通配符去掉
     body = body.replace(/\:[a-z_\$][\w\$]*/ig, '');

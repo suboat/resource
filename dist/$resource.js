@@ -1,6 +1,6 @@
 
       /*
-      2016-05-13T18:55:40.577Z
+      2016-05-22T08:58:53.710Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -642,7 +642,7 @@
 /* 7 */
 /***/ function(module, exports) {
 
-	var core = module.exports = {version: '2.4.0'};
+	var core = module.exports = {version: '2.2.2'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
@@ -3151,9 +3151,6 @@
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
-	    if (!draining || !currentQueue) {
-	        return;
-	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -3459,12 +3456,14 @@
 	      var _urlParts$2 = urlParts[1];
 	      var query = _urlParts$2 === undefined ? '' : _urlParts$2;
 
-	      // 处理body
 
-	      $utils.forEach(params, function (value, key) {
-	        value = $utils.isFunction(value) ? value() : value;
-	        body = body.replace(new RegExp(':' + key, 'g'), value);
-	      });
+	      if ($utils.isArray(params)) {} else if ($utils.isObject(params)) {
+	        // 处理body
+	        $utils.forEach(params, function (value, key) {
+	          value = $utils.isFunction(value) ? value() : value;
+	          body = body.replace(new RegExp(':' + key, 'g'), value);
+	        });
+	      }
 
 	      // 把body中，未匹配的通配符去掉
 	      body = body.replace(/\:[a-z_\$][\w\$]*/ig, '');
