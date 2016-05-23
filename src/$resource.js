@@ -2,6 +2,7 @@ let $utils = require('./$utils');
 let $common = require('./$common');
 let CONFIG = require('./$resource.config');
 let Q = require('q');
+$common.q = Q;
 
 let $http = function () {
 
@@ -164,6 +165,7 @@ class $resource {
 
   static set q(QProvider) {
     Q = QProvider;
+    $common.q = Q;
   }
 
 

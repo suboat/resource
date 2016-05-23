@@ -3,13 +3,10 @@
  */
 
 let $utils = require('./$utils');
-let $q = require('q');
+let Q = require('q');
 
 class $common {
-  constructor() {
-
-  };
-
+  
   static get defaultActions() {
     return {
       get: {method: 'GET'},
@@ -76,7 +73,7 @@ class $common {
    * @returns {promise}
    */
   static returnValueHandler(value, defaultReturnVal) {
-    let [deferred,val] = [$q.defer(), value];
+    let [deferred,val] = [$common.q.defer(), value];
 
     if ($utils.isFunction(value)) val = value();
 
@@ -95,6 +92,14 @@ class $common {
       deferred.reject(value);
     }
     return deferred.promise;
+  }
+
+  static set q(q) {
+    Q = q;
+  }
+
+  static get q() {
+    return Q;
   }
 
 }
