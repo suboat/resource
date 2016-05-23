@@ -1,7 +1,7 @@
 let $utils = require('./$utils');
 let $common = require('./$common');
 let CONFIG = require('./$resource.config');
-let $q = require('q');
+let Q = require('q');
 
 let $http = function () {
 
@@ -158,6 +158,15 @@ class $resource {
     return CONFIG.transformHeaders;
   };
 
+  static get q() {
+    return Q;
+  }
+
+  static set q(QProvider) {
+    Q = QProvider;
+  }
+
+
   /**
    * 将url和参数解析，得到真正的url地址
    * @param url
@@ -256,12 +265,8 @@ class $resource {
     $resource.q[id] = api;
     return api;
   };
-
 }
 
-$resource.q = {};
-
 $resource.$utils = $utils;
-$resource.$q = $q;
 
 module.exports = $resource;

@@ -2,11 +2,10 @@
  * Created by axetroy on 16-4-20.
  */
 
+let GLOBAL = require('./global');
 let $utils = require('./$utils');
-let $q = require('q');
 let $resource = require('./$resource');
 let $common = require('./$common');
-let GLOBAL = require('./global');
 let $cache = require('./$cache');
 
 // 默认的配置
@@ -42,11 +41,13 @@ let $http = function ({
   cache=false,
   responseType=''
 }) {
+  
+  console.log($resource.q);
+  
+  if (!url || !method) return $resource.q.reject();
 
-  if (!url || !method) return $q.reject();
 
-
-  let deferred = $q.defer();
+  let deferred = $resource.q.defer();
 
   let _cache = $cache.get(url + '-' + method);
   if (_cache) {
@@ -94,7 +95,7 @@ let $http = function ({
 
     if (/^(2|3)/.test(XHR.status)) {
       // 经过拦截器筛选
-      let inter = interceptor(XHR.warpper, $q);
+      let inter = interceptor(XHR.warpper, $resource.q);
       $common.returnValueHandler(inter, XHR.warpper)
         .then((response)=> {
           XHR.warpper.resource.$resolve = true;

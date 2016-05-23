@@ -19,6 +19,7 @@
     "tests",
     "test.json",
     "index.html",
-    "demo"
+    "demo",
+    "browserTest"
   ]
 }

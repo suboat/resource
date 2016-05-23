@@ -7,45 +7,38 @@ let GLOBAL = require('./src/global');
 if (GLOBAL.angular) {
   GLOBAL.angular.module('$resource', [])
     .provider('$resource', function () {
-
-      let $resourceProvider = this;
-
-      $resourceProvider.setResponseType = (value)=> {
+      this.setResponseType = (value)=> {
         $resource.responseType = value;
-        return $resourceProvider;
+        return this;
       };
-
-      $resourceProvider.setHeaders = (value)=> {
+      this.setHeaders = (value)=> {
         $resource.headers = value;
-        return $resourceProvider
+        return this
       };
-
-      $resourceProvider.setWithCredentials = (value)=> {
+      this.setWithCredentials = (value)=> {
         $resource.withCredentials = value;
-        return $resourceProvider;
+        return this;
       };
-
-      $resourceProvider.setHosts = (value)=> {
+      this.setHosts = (value)=> {
         $resource.hosts = value;
-        return $resourceProvider;
+        return this;
       };
-
-      $resourceProvider.setInterceptor = (func)=> {
+      this.setInterceptor = (func)=> {
         $resource.interceptor = func;
-        return $resourceProvider;
+        return this;
       };
-
-      $resourceProvider.setTransformHeaders = function (func) {
+      this.setTransformHeaders = (func) => {
         $resource.transformHeaders.push(func);
-        return $resourceProvider;
+        return this;
       };
 
-      $resourceProvider.$get = function () {
+      this.$get = ['$q', function ($q) {
+        $resource.q = $q;
         return $resource;
-      }
+      }]
     });
 } else if (GLOBAL.$ && GLOBAL.jQuery) {
-  GLOBAL.$.fn = $resource;
+  GLOBAL.$.$resource = $resource;
 } else {
   GLOBAL.$resource = $resource;
 }

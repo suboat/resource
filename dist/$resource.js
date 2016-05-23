@@ -1,6 +1,6 @@
 
       /*
-      2016-05-22T08:58:53.710Z
+      2016-05-22T18:57:05.816Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -60,51 +60,46 @@
 
 	var $http = __webpack_require__(2);
 
-	var $resource = __webpack_require__(43);
+	var $resource = __webpack_require__(41);
 
-	var GLOBAL = __webpack_require__(46);
+	var GLOBAL = __webpack_require__(3);
 
 	if (GLOBAL.angular) {
 	  GLOBAL.angular.module('$resource', []).provider('$resource', function () {
+	    var _this = this;
 
-	    var $resourceProvider = this;
-
-	    $resourceProvider.setResponseType = function (value) {
+	    this.setResponseType = function (value) {
 	      $resource.responseType = value;
-	      return $resourceProvider;
+	      return _this;
 	    };
-
-	    $resourceProvider.setHeaders = function (value) {
+	    this.setHeaders = function (value) {
 	      $resource.headers = value;
-	      return $resourceProvider;
+	      return _this;
 	    };
-
-	    $resourceProvider.setWithCredentials = function (value) {
+	    this.setWithCredentials = function (value) {
 	      $resource.withCredentials = value;
-	      return $resourceProvider;
+	      return _this;
 	    };
-
-	    $resourceProvider.setHosts = function (value) {
+	    this.setHosts = function (value) {
 	      $resource.hosts = value;
-	      return $resourceProvider;
+	      return _this;
 	    };
-
-	    $resourceProvider.setInterceptor = function (func) {
+	    this.setInterceptor = function (func) {
 	      $resource.interceptor = func;
-	      return $resourceProvider;
+	      return _this;
 	    };
-
-	    $resourceProvider.setTransformHeaders = function (func) {
+	    this.setTransformHeaders = function (func) {
 	      $resource.transformHeaders.push(func);
-	      return $resourceProvider;
+	      return _this;
 	    };
 
-	    $resourceProvider.$get = function () {
+	    this.$get = ['$q', function ($q) {
+	      $resource.q = $q;
 	      return $resource;
-	    };
+	    }];
 	  });
 	} else if (GLOBAL.$ && GLOBAL.jQuery) {
-	  GLOBAL.$.fn = $resource;
+	  GLOBAL.$.$resource = $resource;
 	} else {
 	  GLOBAL.$resource = $resource;
 	}
@@ -121,11 +116,10 @@
 	 * Created by axetroy on 16-4-20.
 	 */
 
-	var $utils = __webpack_require__(3);
-	var $q = __webpack_require__(40);
-	var $resource = __webpack_require__(43);
-	var $common = __webpack_require__(44);
-	var GLOBAL = __webpack_require__(46);
+	var GLOBAL = __webpack_require__(3);
+	var $utils = __webpack_require__(4);
+	var $resource = __webpack_require__(41);
+	var $common = __webpack_require__(42);
 	var $cache = __webpack_require__(47);
 
 	// 默认的配置
@@ -172,9 +166,11 @@
 	  var responseType = _ref$responseType === undefined ? '' : _ref$responseType;
 
 
-	  if (!url || !method) return $q.reject();
+	  console.log($resource.q);
 
-	  var deferred = $q.defer();
+	  if (!url || !method) return $resource.q.reject();
+
+	  var deferred = $resource.q.defer();
 
 	  var _cache = $cache.get(url + '-' + method);
 	  if (_cache) {
@@ -219,7 +215,7 @@
 
 	    if (/^(2|3)/.test(XHR.status)) {
 	      // 经过拦截器筛选
-	      var inter = interceptor(XHR.warpper, $q);
+	      var inter = interceptor(XHR.warpper, $resource.q);
 	      $common.returnValueHandler(inter, XHR.warpper).then(function (response) {
 	        XHR.warpper.resource.$resolve = true;
 	        cache && $cache.set(url + '-' + method, XHR.warpper, cache);
@@ -353,6 +349,21 @@
 
 /***/ },
 /* 3 */
+/***/ function(module, exports) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
+
+	/**
+	 * Created by axetroy on 16-4-27.
+	 */
+
+	var GLOBAL = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : undefined;
+
+	module.exports = GLOBAL;
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -364,7 +375,7 @@
 	 */
 
 	// object.assign for merge and copy
-	__webpack_require__(4);
+	__webpack_require__(5);
 
 	var TYPED_ARRAY_REGEXP = /^\[object (?:Uint8|Uint8Clamped|Uint16|Uint32|Int8|Int16|Int32|Float32|Float64)Array\]$/;
 
@@ -573,23 +584,23 @@
 	};
 
 /***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// 19.1.3.1 Object.assign(target, source)
-	var $export = __webpack_require__(5);
-
-	$export($export.S + $export.F, 'Object', {assign: __webpack_require__(23)});
-
-/***/ },
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var global    = __webpack_require__(6)
-	  , core      = __webpack_require__(7)
-	  , hide      = __webpack_require__(8)
-	  , redefine  = __webpack_require__(18)
-	  , ctx       = __webpack_require__(21)
+	// 19.1.3.1 Object.assign(target, source)
+	var $export = __webpack_require__(6);
+
+	$export($export.S + $export.F, 'Object', {assign: __webpack_require__(24)});
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var global    = __webpack_require__(7)
+	  , core      = __webpack_require__(8)
+	  , hide      = __webpack_require__(9)
+	  , redefine  = __webpack_require__(19)
+	  , ctx       = __webpack_require__(22)
 	  , PROTOTYPE = 'prototype';
 
 	var $export = function(type, name, source){
@@ -630,7 +641,7 @@
 	module.exports = $export;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -639,19 +650,19 @@
 	if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
-	var core = module.exports = {version: '2.2.2'};
+	var core = module.exports = {version: '2.4.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var dP         = __webpack_require__(9)
-	  , createDesc = __webpack_require__(17);
-	module.exports = __webpack_require__(13) ? function(object, key, value){
+	var dP         = __webpack_require__(10)
+	  , createDesc = __webpack_require__(18);
+	module.exports = __webpack_require__(14) ? function(object, key, value){
 	  return dP.f(object, key, createDesc(1, value));
 	} : function(object, key, value){
 	  object[key] = value;
@@ -659,15 +670,15 @@
 	};
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var anObject       = __webpack_require__(10)
-	  , IE8_DOM_DEFINE = __webpack_require__(12)
-	  , toPrimitive    = __webpack_require__(16)
+	var anObject       = __webpack_require__(11)
+	  , IE8_DOM_DEFINE = __webpack_require__(13)
+	  , toPrimitive    = __webpack_require__(17)
 	  , dP             = Object.defineProperty;
 
-	exports.f = __webpack_require__(13) ? Object.defineProperty : function defineProperty(O, P, Attributes){
+	exports.f = __webpack_require__(14) ? Object.defineProperty : function defineProperty(O, P, Attributes){
 	  anObject(O);
 	  P = toPrimitive(P, true);
 	  anObject(Attributes);
@@ -680,17 +691,17 @@
 	};
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(11);
+	var isObject = __webpack_require__(12);
 	module.exports = function(it){
 	  if(!isObject(it))throw TypeError(it + ' is not an object!');
 	  return it;
 	};
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	module.exports = function(it){
@@ -698,24 +709,24 @@
 	};
 
 /***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = !__webpack_require__(13) && !__webpack_require__(14)(function(){
-	  return Object.defineProperty(__webpack_require__(15)('div'), 'a', {get: function(){ return 7; }}).a != 7;
-	});
-
-/***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// Thank's IE8 for his funny defineProperty
-	module.exports = !__webpack_require__(14)(function(){
-	  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+	module.exports = !__webpack_require__(14) && !__webpack_require__(15)(function(){
+	  return Object.defineProperty(__webpack_require__(16)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 	});
 
 /***/ },
 /* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// Thank's IE8 for his funny defineProperty
+	module.exports = !__webpack_require__(15)(function(){
+	  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+	});
+
+/***/ },
+/* 15 */
 /***/ function(module, exports) {
 
 	module.exports = function(exec){
@@ -727,11 +738,11 @@
 	};
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(11)
-	  , document = __webpack_require__(6).document
+	var isObject = __webpack_require__(12)
+	  , document = __webpack_require__(7).document
 	  // in old IE typeof document.createElement is 'object'
 	  , is = isObject(document) && isObject(document.createElement);
 	module.exports = function(it){
@@ -739,11 +750,11 @@
 	};
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.1.1 ToPrimitive(input [, PreferredType])
-	var isObject = __webpack_require__(11);
+	var isObject = __webpack_require__(12);
 	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
 	// and the second argument - flag - preferred type is a string
 	module.exports = function(it, S){
@@ -756,7 +767,7 @@
 	};
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	module.exports = function(bitmap, value){
@@ -769,18 +780,18 @@
 	};
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var global    = __webpack_require__(6)
-	  , hide      = __webpack_require__(8)
-	  , has       = __webpack_require__(19)
-	  , SRC       = __webpack_require__(20)('src')
+	var global    = __webpack_require__(7)
+	  , hide      = __webpack_require__(9)
+	  , has       = __webpack_require__(20)
+	  , SRC       = __webpack_require__(21)('src')
 	  , TO_STRING = 'toString'
 	  , $toString = Function[TO_STRING]
 	  , TPL       = ('' + $toString).split(TO_STRING);
 
-	__webpack_require__(7).inspectSource = function(it){
+	__webpack_require__(8).inspectSource = function(it){
 	  return $toString.call(it);
 	};
 
@@ -806,7 +817,7 @@
 	});
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports) {
 
 	var hasOwnProperty = {}.hasOwnProperty;
@@ -815,7 +826,7 @@
 	};
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	var id = 0
@@ -825,11 +836,11 @@
 	};
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// optional / simple context binding
-	var aFunction = __webpack_require__(22);
+	var aFunction = __webpack_require__(23);
 	module.exports = function(fn, that, length){
 	  aFunction(fn);
 	  if(that === undefined)return fn;
@@ -850,7 +861,7 @@
 	};
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports) {
 
 	module.exports = function(it){
@@ -859,20 +870,20 @@
 	};
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	// 19.1.2.1 Object.assign(target, source, ...)
-	var getKeys  = __webpack_require__(24)
-	  , gOPS     = __webpack_require__(37)
-	  , pIE      = __webpack_require__(38)
-	  , toObject = __webpack_require__(39)
-	  , IObject  = __webpack_require__(27)
+	var getKeys  = __webpack_require__(25)
+	  , gOPS     = __webpack_require__(38)
+	  , pIE      = __webpack_require__(39)
+	  , toObject = __webpack_require__(40)
+	  , IObject  = __webpack_require__(28)
 	  , $assign  = Object.assign;
 
 	// should work with symbols and should have deterministic property order (V8 bug)
-	module.exports = !$assign || __webpack_require__(14)(function(){
+	module.exports = !$assign || __webpack_require__(15)(function(){
 	  var A = {}
 	    , B = {}
 	    , S = Symbol()
@@ -897,25 +908,25 @@
 	} : $assign;
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-	var $keys       = __webpack_require__(25)
-	  , enumBugKeys = __webpack_require__(36);
+	var $keys       = __webpack_require__(26)
+	  , enumBugKeys = __webpack_require__(37);
 
 	module.exports = Object.keys || function keys(O){
 	  return $keys(O, enumBugKeys);
 	};
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var has          = __webpack_require__(19)
-	  , toIObject    = __webpack_require__(26)
-	  , arrayIndexOf = __webpack_require__(30)(false)
-	  , IE_PROTO     = __webpack_require__(34)('IE_PROTO');
+	var has          = __webpack_require__(20)
+	  , toIObject    = __webpack_require__(27)
+	  , arrayIndexOf = __webpack_require__(31)(false)
+	  , IE_PROTO     = __webpack_require__(35)('IE_PROTO');
 
 	module.exports = function(object, names){
 	  var O      = toIObject(object)
@@ -931,28 +942,28 @@
 	};
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// to indexed object, toObject with fallback for non-array-like ES3 strings
-	var IObject = __webpack_require__(27)
-	  , defined = __webpack_require__(29);
+	var IObject = __webpack_require__(28)
+	  , defined = __webpack_require__(30);
 	module.exports = function(it){
 	  return IObject(defined(it));
 	};
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// fallback for non-array-like ES3 and non-enumerable old V8 strings
-	var cof = __webpack_require__(28);
+	var cof = __webpack_require__(29);
 	module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
 	  return cof(it) == 'String' ? it.split('') : Object(it);
 	};
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports) {
 
 	var toString = {}.toString;
@@ -962,7 +973,7 @@
 	};
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports) {
 
 	// 7.2.1 RequireObjectCoercible(argument)
@@ -972,14 +983,14 @@
 	};
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// false -> Array#indexOf
 	// true  -> Array#includes
-	var toIObject = __webpack_require__(26)
-	  , toLength  = __webpack_require__(31)
-	  , toIndex   = __webpack_require__(33);
+	var toIObject = __webpack_require__(27)
+	  , toLength  = __webpack_require__(32)
+	  , toIndex   = __webpack_require__(34);
 	module.exports = function(IS_INCLUDES){
 	  return function($this, el, fromIndex){
 	    var O      = toIObject($this)
@@ -998,18 +1009,18 @@
 	};
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.1.15 ToLength
-	var toInteger = __webpack_require__(32)
+	var toInteger = __webpack_require__(33)
 	  , min       = Math.min;
 	module.exports = function(it){
 	  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 	};
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports) {
 
 	// 7.1.4 ToInteger
@@ -1020,10 +1031,10 @@
 	};
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toInteger = __webpack_require__(32)
+	var toInteger = __webpack_require__(33)
 	  , max       = Math.max
 	  , min       = Math.min;
 	module.exports = function(index, length){
@@ -1032,20 +1043,20 @@
 	};
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var shared = __webpack_require__(35)('keys')
-	  , uid    = __webpack_require__(20);
+	var shared = __webpack_require__(36)('keys')
+	  , uid    = __webpack_require__(21);
 	module.exports = function(key){
 	  return shared[key] || (shared[key] = uid(key));
 	};
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var global = __webpack_require__(6)
+	var global = __webpack_require__(7)
 	  , SHARED = '__core-js_shared__'
 	  , store  = global[SHARED] || (global[SHARED] = {});
 	module.exports = function(key){
@@ -1053,7 +1064,7 @@
 	};
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports) {
 
 	// IE 8- don't enum bug keys
@@ -1062,29 +1073,487 @@
 	).split(',');
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports) {
 
 	exports.f = Object.getOwnPropertySymbols;
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports) {
 
 	exports.f = {}.propertyIsEnumerable;
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.1.13 ToObject(argument)
-	var defined = __webpack_require__(29);
+	var defined = __webpack_require__(30);
 	module.exports = function(it){
 	  return Object(defined(it));
 	};
 
 /***/ },
-/* 40 */
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var $utils = __webpack_require__(4);
+	var $common = __webpack_require__(42);
+	var CONFIG = __webpack_require__(46);
+	var Q = __webpack_require__(43);
+
+	var $http = function $http() {};
+
+	/**
+	 * $resource请求
+	 */
+
+	var $resource = function () {
+	  function $resource() {
+	    var url = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+	    var registerParams = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	    var actions = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+	    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+
+	    _classCallCheck(this, $resource);
+
+	    // default actions
+	    actions = $utils.merge($common.defaultActions, actions);
+	    // default options
+	    options = $utils.merge($common.defaultOptions, { cache: CONFIG.cache }, options);
+
+	    $utils.forEach(actions, function (action) {
+	      action.url = url;
+
+	      var query = [];
+	      $utils.forEach(registerParams, function (value, key) {
+	        var INLINE_REG = new RegExp(':' + key, 'g');
+	        value = value.indexOf('@') === 0 ? value.replace('@', '') : value;
+	        if (INLINE_REG.test(action.url)) {
+	          action.url = action.url.replace(INLINE_REG, value);
+	        } else {
+	          query.push(key + '=' + value);
+	        }
+	      });
+
+	      if (query.length) {
+	        query = query.join('&');
+	        action.url += (/\?/.test(action.url) ? '&' : '?') + query;
+	      }
+	    });
+
+	    var transformHeaders = $utils.isArray(options.transformHeaders) ? options.transformHeaders : [];
+
+	    var Http = function Http() {
+	      _classCallCheck(this, Http);
+
+	      this.url = url;
+	      this.parmas = registerParams;
+	      this.actions = actions;
+	      this.options = options;
+	      this.transformHeaders = transformHeaders;
+	    };
+
+	    $utils.forEach(actions, function (object, action) {
+
+	      // 设置header和拦截器和跨域请求
+	      var _object$headers = object.headers;
+	      var headers = _object$headers === undefined ? CONFIG.headers : _object$headers;
+	      var _object$interceptor = object.interceptor;
+	      var interceptor = _object$interceptor === undefined ? CONFIG.interceptor : _object$interceptor;
+	      var _object$responseType = object.responseType;
+	      var responseType = _object$responseType === undefined ? CONFIG.responseType : _object$responseType;
+	      var _object$withCredentia = object.withCredentials;
+	      var withCredentials = _object$withCredentia === undefined ? CONFIG.withCredentials : _object$withCredentia;
+
+	      /**
+	       * 实例化之后，真正调用的函数
+	       * @param realParams      解析url的参数，如果为post，put等，则会放进requestBody
+	       * @param config      私有设置，设置请求头等，只针对当前方法生效
+	       * @returns {*}       $resource
+	       */
+
+	      Http.prototype[action] = function () {
+	        var realParams = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	        var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	        var body = $resource.parseParams(CONFIG.hosts + object.url, realParams);
+	        var _config = $utils.merge({
+	          headers: headers,
+	          withCredentials: withCredentials,
+	          interceptor: interceptor,
+	          responseType: responseType
+	        }, options, config,
+	        // 合并所有headers
+	        {
+	          headers: $utils.merge(headers, options.headers, config.headers)
+	        });
+	        // 转换请求头
+	        _config.headers = $common.transform(CONFIG.transformHeaders.concat(transformHeaders, config.transformHeaders || []), _config.headers);
+	        /**
+	         * 发送http请求
+	         * arguments:
+	         *  1: 真正的url地址
+	         *  2: 参数，如果为post，put等，则为requestBody
+	         *  3: 配置项
+	         *  4: 临时配置项，比如只配置此次调用
+	         */
+	        return $http[object.method.toLowerCase()](body, realParams, _config);
+	      };
+	    });
+
+	    return new Http();
+	  }
+
+	  _createClass($resource, null, [{
+	    key: 'parseParams',
+
+
+	    /**
+	     * 将url和参数解析，得到真正的url地址
+	     * @param url
+	     * @param params
+	     * @returns {*}
+	     */
+	    value: function parseParams(url) {
+	      var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	      if (!$utils.isObject(params)) return url;
+
+	      var urlParts = url.split('?');
+	      var _urlParts$ = urlParts[0];
+	      var body = _urlParts$ === undefined ? '' : _urlParts$;
+	      var _urlParts$2 = urlParts[1];
+	      var query = _urlParts$2 === undefined ? '' : _urlParts$2;
+
+
+	      if ($utils.isArray(params)) {} else if ($utils.isObject(params)) {
+	        // 处理body
+	        $utils.forEach(params, function (value, key) {
+	          value = $utils.isFunction(value) ? value() : value;
+	          body = body.replace(new RegExp(':' + key, 'g'), value);
+	        });
+	      }
+
+	      // 把body中，未匹配的通配符去掉
+	      body = body.replace(/\:[a-z_\$][\w\$]*/ig, '');
+
+	      // 处理query
+	      if (query) {
+	        (function () {
+	          var queryArr = [];
+
+	          /**
+	           * 替换查询字符串的通配符
+	           * 以 & 切割查询字符串
+	           * [':user','pwd=:pwd']
+	           */
+	          query.split('&').forEach(function (group) {
+	            if (group === '') return;
+	            var _match = group.split('=');
+	            var key = _match[0] || '';
+	            var value = _match[1] || '';
+	            if (!value) {
+	              if (/^\:/.test(key)) {
+	                key = key.replace(/^\:/, '');
+	                var _value = params[key];
+	                value = _value === undefined || _value === null ? '' : _value;
+	              }
+	            } else {
+	              key = /^\:/.test(key) ? key.replace(/^\:/, '') : key;
+	              if (/^\:/.test(value)) {
+	                var _value2 = value.replace(/^\:/, '');
+	                var paramsVal = params[_value2];
+	                paramsVal = $utils.isFunction(paramsVal) ? paramsVal() : paramsVal;
+	                value = paramsVal === undefined || paramsVal === null || $utils.isNumber(paramsVal) && isNaN(paramsVal) ? '' : paramsVal;
+	              }
+	            }
+	            queryArr.push(key + '=' + value);
+	          });
+
+	          query = queryArr.length ? queryArr.join('&') : '';
+
+	          // 把query中，未匹配的统配符，转换成  xxx=
+	          query = query.replace(/\:([^\&\=]+)/ig, '$1');
+	        })();
+	      }
+
+	      // 拼接url
+	      url = query ? body + '?' + query : body;
+
+	      return url;
+	    }
+	  }, {
+	    key: 'register',
+
+
+	    /**
+	     * 注册api
+	     * @param id          注册api的id
+	     * @param url         api的url
+	     * @param params      api的参数
+	     * @param actions     添加自定义方法的action
+	     * @param options     设置自定义的options
+	     *            cache
+	     *            timeout
+	     *            withCredentials
+	     *            headers
+	     *            responseType
+	     *            interceptor
+	     *            eventHandlers
+	     * @returns {*}       返回一个$resource实例，可以直接调用[get,post,put...]等方法
+	     */
+	    value: function register() {
+	      var id = arguments.length <= 0 || arguments[0] === undefined ? Math.random().toFixed(6) : arguments[0];
+	      var url = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+	      var params = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+	      var actions = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+	      var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
+
+	      if ($resource.q[id]) {
+	        console.warn('API ' + id + ' can\'t be register twice');
+	        id += Math.random().toFixed(6);
+	      }
+	      var api = new $resource(url, params, actions, options);
+	      $resource.q[id] = api;
+	      return api;
+	    }
+	  }, {
+	    key: 'withCredentials',
+
+
+	    // 是否跨域
+	    set: function set(boolean) {
+	      CONFIG.withCredentials = !!boolean;
+	    },
+	    get: function get() {
+	      return CONFIG.withCredentials;
+	    }
+	  }, {
+	    key: 'responseType',
+
+
+	    // 响应类型
+	    set: function set(type) {
+	      CONFIG.responseType = type;
+	    }
+	  }, {
+	    key: '$http',
+
+
+	    // http
+	    set: function set(func) {
+	      $http = func;
+	    },
+	    get: function get() {
+	      return $http;
+	    }
+	  }, {
+	    key: 'headers',
+
+
+	    // 获取header
+	    get: function get() {
+	      return CONFIG.headers;
+	    },
+
+
+	    // 设置header
+	    set: function set(json) {
+	      if (!$utils.isObject(json)) return CONFIG.headers;
+	      return $utils.extend(CONFIG.headers, json);
+	    }
+	  }, {
+	    key: 'interceptor',
+
+
+	    // 获取拦截器
+	    get: function get() {
+	      return interceptor;
+	    },
+	    set: function set(func) {
+	      CONFIG.interceptor = func;
+	    }
+	  }, {
+	    key: 'hosts',
+
+
+	    // 设置api地址
+	    set: function set(url) {
+	      CONFIG.hosts = url;
+	    },
+	    get: function get() {
+	      return CONFIG.hosts;
+	    }
+	  }, {
+	    key: 'cache',
+	    set: function set(boolean) {
+	      CONFIG.cache = boolean;
+	    }
+
+	    // 转换请求头
+
+	  }, {
+	    key: 'transformHeaders',
+	    get: function get() {
+	      return CONFIG.transformHeaders;
+	    }
+	  }, {
+	    key: 'q',
+	    get: function get() {
+	      return Q;
+	    },
+	    set: function set(QProvider) {
+	      Q = QProvider;
+	    }
+	  }]);
+
+	  return $resource;
+	}();
+
+	$resource.$utils = $utils;
+
+	module.exports = $resource;
+
+/***/ },
+/* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	/**
+	 * Created by axetroy on 16-4-24.
+	 */
+
+	var $utils = __webpack_require__(4);
+	var $q = __webpack_require__(43);
+
+	var $common = function () {
+	  function $common() {
+	    _classCallCheck(this, $common);
+	  }
+
+	  _createClass($common, null, [{
+	    key: 'transform',
+
+
+	    /**
+	     * 过滤器 | 变形器，用于数据的变形
+	     * @param transformList   一个由函数，组成的数组
+	     * @param value           要过滤的对象
+	     * @param index           [不填的参数]
+	     * @returns {*}           返回最终变形的结果
+	     */
+	    value: function transform() {
+	      var transformList = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+	      var value = arguments[1];
+	      var index = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+
+	      var transformFunction = transformList[index];
+
+	      if (!transformList || !transformList.length) return value;
+
+	      // 传入的不是函数，则跳过
+	      if (typeof transformFunction !== 'function') return $common.transform(value, ++index);
+
+	      if (index < transformList.length - 1) {
+	        value = transformFunction(value);
+	        return $common.transform(transformList, value, ++index);
+	      } else if (index === transformList.length - 1) {
+	        // 最后一个
+	        return transformFunction(value);
+	      } else {
+	        return value;
+	      }
+	    }
+	  }, {
+	    key: 'returnValueHandler',
+
+
+	    /**
+	     * 处理函数的返回值
+	     * @param value
+	     * @param defaultReturnVal
+	     * @returns {promise}
+	     */
+	    value: function returnValueHandler(value, defaultReturnVal) {
+	      var deferred = $q.defer();
+	      var val = value;
+
+
+	      if ($utils.isFunction(value)) val = value();
+
+	      // false || undefined || null || NaN
+	      if (!val) {
+	        deferred.reject(defaultReturnVal);
+	      }
+	      // true
+	      else if ($utils.isBoolean(val)) {
+	          deferred.resolve(defaultReturnVal);
+	        }
+	        // promise
+	        else if ($utils.isObject(val) && $utils.isFunction(val.then)) {
+	            return val;
+	          } else {
+	            deferred.reject(value);
+	          }
+	      return deferred.promise;
+	    }
+	  }, {
+	    key: 'defaultActions',
+	    get: function get() {
+	      return {
+	        get: { method: 'GET' },
+	        query: { method: 'GET' },
+	        post: { method: 'POST' },
+	        save: { method: 'POST' },
+	        create: { method: 'POST' },
+	        put: { method: 'PUT' },
+	        update: { method: 'PUT' },
+	        fetch: { method: 'GET' },
+	        delete: { method: 'DELETE' },
+	        remove: { method: 'DELETE' },
+	        options: { method: 'OPTIONS' },
+	        head: { method: 'HEAD' },
+	        patch: { method: 'PATCH' },
+	        trace: { method: 'TRACE' },
+	        connect: { method: 'CONNECT' },
+	        move: { method: 'MOVE' },
+	        copy: { method: 'COPY' },
+	        link: { method: 'LINK' },
+	        unlink: { method: 'UNLINK' },
+	        wrapped: { method: 'WRAPPED' },
+	        'extension-mothed': { method: 'Extension-mothed' }
+	      };
+	    }
+	  }, {
+	    key: 'defaultOptions',
+	    get: function get() {
+	      return {
+	        cache: false,
+	        timeout: null
+	      };
+	    }
+	  }]);
+
+	  return $common;
+	}();
+
+	module.exports = $common;
+
+/***/ },
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process, setImmediate) {// vim:ts=4:sts=4:sw=4:
@@ -3136,10 +3605,10 @@
 
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41), __webpack_require__(42).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(44), __webpack_require__(45).setImmediate))
 
 /***/ },
-/* 41 */
+/* 44 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -3151,6 +3620,9 @@
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -3236,10 +3708,10 @@
 
 
 /***/ },
-/* 42 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(41).nextTick;
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(44).nextTick;
 	var apply = Function.prototype.apply;
 	var slice = Array.prototype.slice;
 	var immediateIds = {};
@@ -3315,463 +3787,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(42).setImmediate, __webpack_require__(42).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(45).setImmediate, __webpack_require__(45).clearImmediate))
 
 /***/ },
-/* 43 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var $utils = __webpack_require__(3);
-	var $common = __webpack_require__(44);
-	var CONFIG = __webpack_require__(45);
-	var $q = __webpack_require__(40);
-
-	var $http = function $http() {};
-
-	/**
-	 * $resource请求
-	 */
-
-	var $resource = function () {
-	  function $resource() {
-	    var url = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-	    var registerParams = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-	    var actions = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-	    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
-
-	    _classCallCheck(this, $resource);
-
-	    // default actions
-	    actions = $utils.merge($common.defaultActions, actions);
-	    // default options
-	    options = $utils.merge($common.defaultOptions, { cache: CONFIG.cache }, options);
-
-	    $utils.forEach(actions, function (action) {
-	      action.url = url;
-
-	      var query = [];
-	      $utils.forEach(registerParams, function (value, key) {
-	        var INLINE_REG = new RegExp(':' + key, 'g');
-	        value = value.indexOf('@') === 0 ? value.replace('@', '') : value;
-	        if (INLINE_REG.test(action.url)) {
-	          action.url = action.url.replace(INLINE_REG, value);
-	        } else {
-	          query.push(key + '=' + value);
-	        }
-	      });
-
-	      if (query.length) {
-	        query = query.join('&');
-	        action.url += (/\?/.test(action.url) ? '&' : '?') + query;
-	      }
-	    });
-
-	    var transformHeaders = $utils.isArray(options.transformHeaders) ? options.transformHeaders : [];
-
-	    var Http = function Http() {
-	      _classCallCheck(this, Http);
-
-	      this.url = url;
-	      this.parmas = registerParams;
-	      this.actions = actions;
-	      this.options = options;
-	      this.transformHeaders = transformHeaders;
-	    };
-
-	    $utils.forEach(actions, function (object, action) {
-
-	      // 设置header和拦截器和跨域请求
-	      var _object$headers = object.headers;
-	      var headers = _object$headers === undefined ? CONFIG.headers : _object$headers;
-	      var _object$interceptor = object.interceptor;
-	      var interceptor = _object$interceptor === undefined ? CONFIG.interceptor : _object$interceptor;
-	      var _object$responseType = object.responseType;
-	      var responseType = _object$responseType === undefined ? CONFIG.responseType : _object$responseType;
-	      var _object$withCredentia = object.withCredentials;
-	      var withCredentials = _object$withCredentia === undefined ? CONFIG.withCredentials : _object$withCredentia;
-
-	      /**
-	       * 实例化之后，真正调用的函数
-	       * @param realParams      解析url的参数，如果为post，put等，则会放进requestBody
-	       * @param config      私有设置，设置请求头等，只针对当前方法生效
-	       * @returns {*}       $resource
-	       */
-
-	      Http.prototype[action] = function () {
-	        var realParams = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-	        var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-	        var body = $resource.parseParams(CONFIG.hosts + object.url, realParams);
-	        var _config = $utils.merge({
-	          headers: headers,
-	          withCredentials: withCredentials,
-	          interceptor: interceptor,
-	          responseType: responseType
-	        }, options, config,
-	        // 合并所有headers
-	        {
-	          headers: $utils.merge(headers, options.headers, config.headers)
-	        });
-	        // 转换请求头
-	        _config.headers = $common.transform(CONFIG.transformHeaders.concat(transformHeaders, config.transformHeaders || []), _config.headers);
-	        /**
-	         * 发送http请求
-	         * arguments:
-	         *  1: 真正的url地址
-	         *  2: 参数，如果为post，put等，则为requestBody
-	         *  3: 配置项
-	         *  4: 临时配置项，比如只配置此次调用
-	         */
-	        return $http[object.method.toLowerCase()](body, realParams, _config);
-	      };
-	    });
-
-	    return new Http();
-	  }
-
-	  _createClass($resource, null, [{
-	    key: 'parseParams',
-
-
-	    /**
-	     * 将url和参数解析，得到真正的url地址
-	     * @param url
-	     * @param params
-	     * @returns {*}
-	     */
-	    value: function parseParams(url) {
-	      var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-	      if (!$utils.isObject(params)) return url;
-
-	      var urlParts = url.split('?');
-	      var _urlParts$ = urlParts[0];
-	      var body = _urlParts$ === undefined ? '' : _urlParts$;
-	      var _urlParts$2 = urlParts[1];
-	      var query = _urlParts$2 === undefined ? '' : _urlParts$2;
-
-
-	      if ($utils.isArray(params)) {} else if ($utils.isObject(params)) {
-	        // 处理body
-	        $utils.forEach(params, function (value, key) {
-	          value = $utils.isFunction(value) ? value() : value;
-	          body = body.replace(new RegExp(':' + key, 'g'), value);
-	        });
-	      }
-
-	      // 把body中，未匹配的通配符去掉
-	      body = body.replace(/\:[a-z_\$][\w\$]*/ig, '');
-
-	      // 处理query
-	      if (query) {
-	        (function () {
-	          var queryArr = [];
-
-	          /**
-	           * 替换查询字符串的通配符
-	           * 以 & 切割查询字符串
-	           * [':user','pwd=:pwd']
-	           */
-	          query.split('&').forEach(function (group) {
-	            if (group === '') return;
-	            var _match = group.split('=');
-	            var key = _match[0] || '';
-	            var value = _match[1] || '';
-	            if (!value) {
-	              if (/^\:/.test(key)) {
-	                key = key.replace(/^\:/, '');
-	                var _value = params[key];
-	                value = _value === undefined || _value === null ? '' : _value;
-	              }
-	            } else {
-	              key = /^\:/.test(key) ? key.replace(/^\:/, '') : key;
-	              if (/^\:/.test(value)) {
-	                var _value2 = value.replace(/^\:/, '');
-	                var paramsVal = params[_value2];
-	                paramsVal = $utils.isFunction(paramsVal) ? paramsVal() : paramsVal;
-	                value = paramsVal === undefined || paramsVal === null || $utils.isNumber(paramsVal) && isNaN(paramsVal) ? '' : paramsVal;
-	              }
-	            }
-	            queryArr.push(key + '=' + value);
-	          });
-
-	          query = queryArr.length ? queryArr.join('&') : '';
-
-	          // 把query中，未匹配的统配符，转换成  xxx=
-	          query = query.replace(/\:([^\&\=]+)/ig, '$1');
-	        })();
-	      }
-
-	      // 拼接url
-	      url = query ? body + '?' + query : body;
-
-	      return url;
-	    }
-	  }, {
-	    key: 'register',
-
-
-	    /**
-	     * 注册api
-	     * @param id          注册api的id
-	     * @param url         api的url
-	     * @param params      api的参数
-	     * @param actions     添加自定义方法的action
-	     * @param options     设置自定义的options
-	     *            cache
-	     *            timeout
-	     *            withCredentials
-	     *            headers
-	     *            responseType
-	     *            interceptor
-	     *            eventHandlers
-	     * @returns {*}       返回一个$resource实例，可以直接调用[get,post,put...]等方法
-	     */
-	    value: function register() {
-	      var id = arguments.length <= 0 || arguments[0] === undefined ? Math.random().toFixed(6) : arguments[0];
-	      var url = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-	      var params = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-	      var actions = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
-	      var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
-
-	      if ($resource.q[id]) {
-	        console.warn('API ' + id + ' can\'t be register twice');
-	        id += Math.random().toFixed(6);
-	      }
-	      var api = new $resource(url, params, actions, options);
-	      $resource.q[id] = api;
-	      return api;
-	    }
-	  }, {
-	    key: 'withCredentials',
-
-
-	    // 是否跨域
-	    set: function set(boolean) {
-	      CONFIG.withCredentials = !!boolean;
-	    },
-	    get: function get() {
-	      return CONFIG.withCredentials;
-	    }
-	  }, {
-	    key: 'responseType',
-
-
-	    // 响应类型
-	    set: function set(type) {
-	      CONFIG.responseType = type;
-	    }
-	  }, {
-	    key: '$http',
-
-
-	    // http
-	    set: function set(func) {
-	      $http = func;
-	    },
-	    get: function get() {
-	      return $http;
-	    }
-	  }, {
-	    key: 'headers',
-
-
-	    // 获取header
-	    get: function get() {
-	      return CONFIG.headers;
-	    },
-
-
-	    // 设置header
-	    set: function set(json) {
-	      if (!$utils.isObject(json)) return CONFIG.headers;
-	      return $utils.extend(CONFIG.headers, json);
-	    }
-	  }, {
-	    key: 'interceptor',
-
-
-	    // 获取拦截器
-	    get: function get() {
-	      return interceptor;
-	    },
-	    set: function set(func) {
-	      CONFIG.interceptor = func;
-	    }
-	  }, {
-	    key: 'hosts',
-
-
-	    // 设置api地址
-	    set: function set(url) {
-	      CONFIG.hosts = url;
-	    },
-	    get: function get() {
-	      return CONFIG.hosts;
-	    }
-	  }, {
-	    key: 'cache',
-	    set: function set(boolean) {
-	      CONFIG.cache = boolean;
-	    }
-
-	    // 转换请求头
-
-	  }, {
-	    key: 'transformHeaders',
-	    get: function get() {
-	      return CONFIG.transformHeaders;
-	    }
-	  }]);
-
-	  return $resource;
-	}();
-
-	$resource.q = {};
-
-	$resource.$utils = $utils;
-	$resource.$q = $q;
-
-	module.exports = $resource;
-
-/***/ },
-/* 44 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	/**
-	 * Created by axetroy on 16-4-24.
-	 */
-
-	var $utils = __webpack_require__(3);
-	var $q = __webpack_require__(40);
-
-	var $common = function () {
-	  function $common() {
-	    _classCallCheck(this, $common);
-	  }
-
-	  _createClass($common, null, [{
-	    key: 'transform',
-
-
-	    /**
-	     * 过滤器 | 变形器，用于数据的变形
-	     * @param transformList   一个由函数，组成的数组
-	     * @param value           要过滤的对象
-	     * @param index           [不填的参数]
-	     * @returns {*}           返回最终变形的结果
-	     */
-	    value: function transform() {
-	      var transformList = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-	      var value = arguments[1];
-	      var index = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
-
-	      var transformFunction = transformList[index];
-
-	      if (!transformList || !transformList.length) return value;
-
-	      // 传入的不是函数，则跳过
-	      if (typeof transformFunction !== 'function') return $common.transform(value, ++index);
-
-	      if (index < transformList.length - 1) {
-	        value = transformFunction(value);
-	        return $common.transform(transformList, value, ++index);
-	      } else if (index === transformList.length - 1) {
-	        // 最后一个
-	        return transformFunction(value);
-	      } else {
-	        return value;
-	      }
-	    }
-	  }, {
-	    key: 'returnValueHandler',
-
-
-	    /**
-	     * 处理函数的返回值
-	     * @param value
-	     * @param defaultReturnVal
-	     * @returns {promise}
-	     */
-	    value: function returnValueHandler(value, defaultReturnVal) {
-	      var deferred = $q.defer();
-	      var val = value;
-
-
-	      if ($utils.isFunction(value)) val = value();
-
-	      // false || undefined || null || NaN
-	      if (!val) {
-	        deferred.reject(defaultReturnVal);
-	      }
-	      // true
-	      else if ($utils.isBoolean(val)) {
-	          deferred.resolve(defaultReturnVal);
-	        }
-	        // promise
-	        else if ($utils.isObject(val) && $utils.isFunction(val.then)) {
-	            return val;
-	          } else {
-	            deferred.reject(value);
-	          }
-	      return deferred.promise;
-	    }
-	  }, {
-	    key: 'defaultActions',
-	    get: function get() {
-	      return {
-	        get: { method: 'GET' },
-	        query: { method: 'GET' },
-	        post: { method: 'POST' },
-	        save: { method: 'POST' },
-	        create: { method: 'POST' },
-	        put: { method: 'PUT' },
-	        update: { method: 'PUT' },
-	        fetch: { method: 'GET' },
-	        delete: { method: 'DELETE' },
-	        remove: { method: 'DELETE' },
-	        options: { method: 'OPTIONS' },
-	        head: { method: 'HEAD' },
-	        patch: { method: 'PATCH' },
-	        trace: { method: 'TRACE' },
-	        connect: { method: 'CONNECT' },
-	        move: { method: 'MOVE' },
-	        copy: { method: 'COPY' },
-	        link: { method: 'LINK' },
-	        unlink: { method: 'UNLINK' },
-	        wrapped: { method: 'WRAPPED' },
-	        'extension-mothed': { method: 'Extension-mothed' }
-	      };
-	    }
-	  }, {
-	    key: 'defaultOptions',
-	    get: function get() {
-	      return {
-	        cache: false,
-	        timeout: null
-	      };
-	    }
-	  }]);
-
-	  return $common;
-	}();
-
-	module.exports = $common;
-
-/***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3780,7 +3799,7 @@
 	 * Created by axetroy on 16-4-24.
 	 */
 
-	var GLOBAL = __webpack_require__(46);
+	var GLOBAL = __webpack_require__(3);
 
 	var CONFIG = {
 	  hosts: function (g) {
@@ -3822,21 +3841,6 @@
 	};
 
 	module.exports = CONFIG;
-
-/***/ },
-/* 46 */
-/***/ function(module, exports) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
-
-	/**
-	 * Created by axetroy on 16-4-27.
-	 */
-
-	var GLOBAL = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : undefined;
-
-	module.exports = GLOBAL;
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
 /* 47 */
