@@ -166,8 +166,6 @@
 	  var responseType = _ref$responseType === undefined ? '' : _ref$responseType;
 
 
-	  console.log($resource.q);
-
 	  if (!url || !method) return $resource.q.reject();
 
 	  var deferred = $resource.q.defer();

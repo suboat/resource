@@ -41,11 +41,8 @@ let $http = function ({
   cache=false,
   responseType=''
 }) {
-  
-  console.log($resource.q);
-  
-  if (!url || !method) return $resource.q.reject();
 
+  if (!url || !method) return $resource.q.reject();
 
   let deferred = $resource.q.defer();
 
