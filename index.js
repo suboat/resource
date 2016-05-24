@@ -1,8 +1,7 @@
-let $http = require('./src/$http');
-
-let $resource = require('./src/$resource');
-
 let GLOBAL = require('./src/global');
+let Q = require('q');
+let $http = require('./src/$http');
+let $resource = require('./src/$resource');
 
 if (GLOBAL.angular) {
   GLOBAL.angular.module('$resource', [])
@@ -33,14 +32,19 @@ if (GLOBAL.angular) {
       };
 
       this.$get = ['$q', function ($q) {
-        $resource.q = $q;
+        $http.injector('$q', $q);
+        $resource.injector('$http', $http);
         return $resource;
       }]
     });
-} else if (GLOBAL.$ && GLOBAL.jQuery) {
-  GLOBAL.$.$resource = $resource;
 } else {
-  GLOBAL.$resource = $resource;
+  $http.injector('$q', Q);
+  $resource.injector('$http', $http);
+  if (GLOBAL.$ && GLOBAL.jQuery) {
+    GLOBAL.$.$resource = $resource;
+  } else {
+    GLOBAL.$resource = $resource;
+  }
 }
 
 module.exports = $resource;

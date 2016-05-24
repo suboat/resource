@@ -5,9 +5,19 @@ var TransferWebpackPlugin = require('transfer-webpack-plugin');
 
 // webpack.config.js
 module.exports = {
-  entry: [
-    path.join(__dirname, 'index.js')
-  ],
+  // entry: [
+  //   path.join(__dirname, 'index.js'),
+  //   path.join(__dirname, 'index.ng.js'),
+  //   // path.join(__dirname, 'index.jq.js')
+  // ],
+  entry: {
+    common: [
+      path.join(__dirname, 'index.js')
+    ],
+    ng: [
+      path.join(__dirname, 'index.ng.js')
+    ]
+  },
   //Server Configuration options
   // devServer: {
   //   contentBase: '',  //静态资源的目录 相对路径,相对于当前路径 默认为当前config所在的目录
@@ -19,8 +29,8 @@ module.exports = {
   // devtool: 'eval',
   output: {
     path: distPath,
-    filename: '$resource.js'
-    // filename: '$resource.[chunkhash:8].js',
+    // filename: '$resource.js'
+    filename: '$resource.[name].js',
     // chunkFilename: '[name].[chunkhash:8].js'
   },
   resolve: {
@@ -70,7 +80,7 @@ module.exports = {
     }),
 
     // 删除重复的代码
-    new webpack.optimize.DedupePlugin(),
+    // new webpack.optimize.DedupePlugin(),
     // new webpack.DllPlugin({
     //   path: path.join(__dirname, "manifest.json"),
     //   name: "[name]_[hash]",
@@ -99,7 +109,7 @@ module.exports = {
     }),
 
     //允许错误不打断程序
-    new webpack.NoErrorsPlugin(),
+    // new webpack.NoErrorsPlugin(),
 
     // //把指定文件夹下的文件复制到指定的目录
     // new TransferWebpackPlugin([

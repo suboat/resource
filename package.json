@@ -1,8 +1,8 @@
 {
   "name": "resource",
-  "version": "0.3.8",
+  "version": "0.4.0",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/$resource.common.js",
   "scripts": {
     "test": "mocha --compilers js:babel-core/register",
     "build": "webpack --display-error-details --progress --colors --watch",

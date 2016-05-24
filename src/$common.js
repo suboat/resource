@@ -2,11 +2,8 @@
  * Created by axetroy on 16-4-24.
  */
 
-let $utils = require('./$utils');
-let Q = require('q');
-
 class $common {
-  
+
   static get defaultActions() {
     return {
       get: {method: 'GET'},
@@ -65,43 +62,6 @@ class $common {
       return value
     }
   };
-
-  /**
-   * 处理函数的返回值
-   * @param value
-   * @param defaultReturnVal
-   * @returns {promise}
-   */
-  static returnValueHandler(value, defaultReturnVal) {
-    let [deferred,val] = [$common.q.defer(), value];
-
-    if ($utils.isFunction(value)) val = value();
-
-    // false || undefined || null || NaN
-    if (!val) {
-      deferred.reject(defaultReturnVal);
-    }
-    // true
-    else if ($utils.isBoolean(val)) {
-      deferred.resolve(defaultReturnVal);
-    }
-    // promise
-    else if ($utils.isObject(val) && $utils.isFunction(val.then)) {
-      return val;
-    } else {
-      deferred.reject(value);
-    }
-    return deferred.promise;
-  }
-
-  static set q(q) {
-    Q = q;
-  }
-
-  static get q() {
-    return Q;
-  }
-
 }
 
 module.exports = $common;

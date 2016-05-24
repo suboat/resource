@@ -21,6 +21,7 @@
   angular.module('app', ['$resource'])
     .controller('defaultCtrl', function ($scope, $resource, $q) {
       $scope.test = '333';
+      console.log($resource);
       var api = new $resource('/test.json').get().$promise
         .then(function (resp) {
           console.log(resp.data);

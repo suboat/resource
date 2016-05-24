@@ -2,17 +2,40 @@
  * Created by axetroy on 16-4-20.
  */
 
-let GLOBAL = require('./global');
-let $utils = require('./$utils');
-let $resource = require('./$resource');
-let $common = require('./$common');
-let $cache = require('./$cache');
+import GLOBAL from './global';
+import {noop, merge, extend, forEach, fromJson, isFunction, isBoolean, isObject} from './$utils';
+import $cache from './$cache';
+
+
+let injection = {};
 
 // 默认的配置
 let config = {
   headers: {
     Accept: 'application/json, text/plain, text/html, */*'
   }
+};
+
+let returnValueHandler = (value, defaultReturnVal)=> {
+  let [deferred,val] = [$http.invoke('$q').defer(), value];
+
+  if (isFunction(value)) val = value();
+
+  // false || undefined || null || NaN
+  if (!val) {
+    deferred.reject(defaultReturnVal);
+  }
+  // true
+  else if (isBoolean(val)) {
+    deferred.resolve(defaultReturnVal);
+  }
+  // promise
+  else if (isObject(val) && isFunction(val.then)) {
+    return val;
+  } else {
+    deferred.reject(value);
+  }
+  return deferred.promise;
 };
 
 /**
@@ -35,16 +58,16 @@ let $http = function ({
   headers={},
   withCredentials=false,
   data=null,
-  interceptor=$utils.noop,
+  interceptor=noop,
   timeout=null,
   eventHandlers={},
   cache=false,
   responseType=''
 }) {
 
-  if (!url || !method) return $resource.q.reject();
+  if (!url || !method) return $http.invoke('$q').reject();
 
-  let deferred = $resource.q.defer();
+  let deferred = $http.invoke('$q').defer();
 
   let _cache = $cache.get(url + '-' + method);
   if (_cache) {
@@ -92,8 +115,8 @@ let $http = function ({
 
     if (/^(2|3)/.test(XHR.status)) {
       // 经过拦截器筛选
-      let inter = interceptor(XHR.warpper, $resource.q);
-      $common.returnValueHandler(inter, XHR.warpper)
+      let inter = interceptor(XHR.warpper, $http.invoke('$q'));
+      returnValueHandler(inter, XHR.warpper)
         .then((response)=> {
           XHR.warpper.resource.$resolve = true;
           cache && $cache.set(url + '-' + method, XHR.warpper, cache);
@@ -111,16 +134,16 @@ let $http = function ({
 
   // XHR 事件
   let errorFunc = (event, XHRWrapper)=> deferred.reject(XHRWrapper);
-  let ErrorHandler = $utils.merge({
+  let ErrorHandler = merge({
     ontimeout: errorFunc,
     onerror: errorFunc,
     onabort: errorFunc
   }, eventHandlers);
 
-  $utils.forEach(ErrorHandler, function (handler = $utils.noop, eventName) {
+  forEach(ErrorHandler, function (handler = noop, eventName) {
     XHR[eventName] = (event)=> {
       XHR.warpper = XHRWrapper(XHR);
-      $utils.isFunction(handler) && handler(event, XHR.warpper);
+      isFunction(handler) && handler(event, XHR.warpper);
 
       if (/(ontimeout|onerror|onabort)/i.test(eventName)) {
         XHR.warpper.resource.$resolve = false;
@@ -133,8 +156,8 @@ let $http = function ({
   XHR.open(method, url, true);
 
   // 设置头部信息，必须在open服务器之后
-  XHR.$$requestHeader = $utils.merge(config.headers, headers);
-  $utils.forEach(XHR.$$requestHeader, (value, key)=> XHR.setRequestHeader(key, value));
+  XHR.$$requestHeader = merge(config.headers, headers);
+  forEach(XHR.$$requestHeader, (value, key)=> XHR.setRequestHeader(key, value));
 
   /*
    响应头，默认使用json
@@ -184,10 +207,10 @@ let XHRWrapper = (XHR)=> {
   })();
 
   // response data
-  let data = /\/json/i.test(headers['content-type']) ? $utils.fromJson(XHR.response) : XHR.response;
+  let data = /\/json/i.test(headers['content-type']) ? fromJson(XHR.response) : XHR.response;
 
   // the resource
-  let resource = $utils.extend(XHR.warpper.resource, data || {});
+  let resource = extend(XHR.warpper.resource, data || {});
 
   return {$$XHR: XHR, config, data, headers, resource, status: XHR.status, statusText: XHR.statusText};
 };
@@ -220,12 +243,18 @@ let XHRWrapper = (XHR)=> {
   $http[method.toLocaleLowerCase()] = function (url = '', params = {}, config = {}) {
     // 除GET方法外，其余带DATA
     let data = /^\s*GET/i.test(method) ? null : Object.keys(params).length ? params : null;
-    config = $utils.merge({url, method, data}, config);
+    config = merge({url, method, data}, config);
     return $http(config);
   };
 
 });
 
-$resource.$http = $http;
+$http.injector = (key, object)=> {
+  injection[key] = object;
+};
+
+$http.invoke = (key)=> {
+  return injection[key];
+};
 
 module.exports = $http;

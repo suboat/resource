@@ -1,7 +1,7 @@
 {
   "name": "resource",
   "description": "",
-  "main": "./dist/$resource.js",
+  "main": "./dist/$resource.common.js",
   "authors": [
     "axetroy"
   ],

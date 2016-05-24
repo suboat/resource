@@ -1,12 +1,8 @@
 let $utils = require('./$utils');
 let $common = require('./$common');
 let CONFIG = require('./$resource.config');
-let Q = require('q');
-$common.q = Q;
 
-let $http = function () {
-
-};
+let injection = {};
 
 /**
  * $resource请求
@@ -89,6 +85,7 @@ class $resource {
          *  3: 配置项
          *  4: 临时配置项，比如只配置此次调用
          */
+        let $http = $resource.invoke('$http');
         return $http[object.method.toLowerCase()](body, realParams, _config);
       };
 
@@ -110,15 +107,6 @@ class $resource {
   // 响应类型
   static set responseType(type) {
     CONFIG.responseType = type;
-  };
-
-  // http
-  static set $http(func) {
-    $http = func;
-  };
-
-  static get $http() {
-    return $http;
   };
 
   // 获取header
@@ -158,16 +146,6 @@ class $resource {
   static get transformHeaders() {
     return CONFIG.transformHeaders;
   };
-
-  static get q() {
-    return Q;
-  }
-
-  static set q(QProvider) {
-    Q = QProvider;
-    $common.q = Q;
-  }
-
 
   /**
    * 将url和参数解析，得到真正的url地址
@@ -267,8 +245,15 @@ class $resource {
     $resource.q[id] = api;
     return api;
   };
-}
 
-$resource.$utils = $utils;
+  static injector(key, object) {
+    injection[key] = object;
+  }
+
+  static invoke(key) {
+    return injection[key];
+  }
+
+}
 
 module.exports = $resource;
