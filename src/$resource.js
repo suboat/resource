@@ -256,4 +256,6 @@ class $resource {
 
 }
 
+$resource.q = {};
+
 module.exports = $resource;
