@@ -242,7 +242,7 @@ let XHRWrapper = (XHR)=> {
    */
   $http[method.toLocaleLowerCase()] = function (url = '', params = {}, config = {}) {
     // 除GET方法外，其余带DATA
-    let data = /^\s*GET/i.test(method) ? null : Object.keys(params).length ? params : null;
+    let data = /^\s*GET/i.test(method) ? null : params;
     config = merge({url, method, data}, config);
     return $http(config);
   };

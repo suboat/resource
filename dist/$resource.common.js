@@ -1,6 +1,6 @@
 
       /*
-      2016-05-25T02:40:42.713Z
+      2016-05-28T11:36:43.061Z
       */
       
 /******/ (function(modules) { // webpackBootstrap
@@ -2623,7 +2623,7 @@
 	    var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
 	    // 除GET方法外，其余带DATA
-	    var data = /^\s*GET/i.test(method) ? null : Object.keys(params).length ? params : null;
+	    var data = /^\s*GET/i.test(method) ? null : params;
 	    config = (0, _$utils.merge)({ url: url, method: method, data: data }, config);
 	    return $http(config);
 	  };
