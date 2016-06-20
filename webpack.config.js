@@ -31,6 +31,8 @@ module.exports = {
     path: distPath,
     // filename: '$resource.js'
     filename: '$resource.[name].js',
+    library: 'resource',
+    libraryTarget: 'umd'
     // chunkFilename: '[name].[chunkhash:8].js'
   },
   resolve: {

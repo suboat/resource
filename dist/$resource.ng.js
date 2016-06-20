@@ -1,9 +1,19 @@
 
       /*
-      2016-05-28T11:36:43.061Z
+      2016-06-20T08:19:14.285Z
       */
       
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["resource"] = factory();
+	else
+		root["resource"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -1650,4 +1660,6 @@
 	exports.default = MODULE_NAME;
 
 /***/ }
-/******/ ]);
+/******/ ])
+});
+;
