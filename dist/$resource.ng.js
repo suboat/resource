@@ -1,6 +1,6 @@
 
       /*
-      2016-06-20T08:19:14.285Z
+      2016-08-23T01:45:19.151Z
       */
       
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -196,7 +196,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // CROS
-	  XHR.withCredentials = !!withCredentials;
+	  try {
+	    // avoid some error in shit IE
+	    XHR.withCredentials = !!withCredentials;
+	  } catch (e) {}
 
 	  // timeout
 	  if (!!timeout) XHR.timeout = timeout;
