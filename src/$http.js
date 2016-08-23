@@ -91,7 +91,10 @@ let $http = function ({
   }
 
   // CROS
-  XHR.withCredentials = !!withCredentials;
+  try{
+	// avoid some error in shit IE
+ 	XHR.withCredentials = !!withCredentials;
+  }catch(e){}
 
   // timeout
   if (!!timeout) XHR.timeout = timeout;
